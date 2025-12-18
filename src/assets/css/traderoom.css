@@ -1,0 +1,2947 @@
+/* =================================================================
+====================================================================
+====================================================================
+VARIABLES GLOBALES – DARK THEME
+====================================================================
+====================================================================
+================================================================= */
+:root {
+  /* PALETA PRINCIPAL */
+  --dark-bg:         #0F0F0F;   /* PERSONALIZADO */
+  --dark-bg-hover:   #2E2E2E;   /* PERSONALIZADO */
+  --dark-bg-hover2:  #1B1B1B;   /* PERSONALIZADO */
+  --dark-bg-active:  #1B212F;   /* PERSONALIZADO */
+  --dark-bg-active2: #202933;   /* PERSONALIZADO */
+
+  /* BORDES */
+  --border-bg:      #2E2E2E;    /* PERSONALIZADO */
+  --border-divider: #262D3E;    /* PERSONALIZADO */
+  --border-soft:    #1f2430;
+  --border-medium:  #2E2E2E;    
+  --border-strong:  #3b4459;
+
+  /* TEXTOS */
+  --text-primary:   #DBDBDB;
+  --text-secondary: #9ca3af;
+  --text-muted:     #6b7280;
+  --text-accent:    #93c5fd;
+
+  /* COLORES ACCIÓN */
+  --accent-blue:    #3b82f6;
+  --accent-green:   #22c55e;
+  --accent-red:     #ef4444;
+  --accent-yellow:  #facc15;
+
+  /* COLORES BUY SELL */
+  --c-sell:    #ff5858;              /* PERSONALIZADO */
+  --c-buy:     #4597ff;              /* PERSONALIZADO */
+  --c-confirm: #EC6F18;              /* PERSONALIZADO */
+  --c-blue:    #3468ff;              /* PERSONALIZADO */
+
+  /* BACKGROUNDS ESPECÍFICOS */
+  --panel-bg:       #171c27;
+  --panel-bg-soft:  #121623;
+  --hover-row:      #1f2937;
+
+  /* SOMBRAS */
+  --shadow-soft:    0 4px 18px rgba(0, 0, 0, 0.65);
+  --shadow-strong:  0 18px 45px rgba(0, 0, 0, 0.85);
+
+  /* RADIO */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* PADDING */
+  --pad-sm: 6px;
+  --pad-md: 10px;
+  --pad-lg: 16px;
+
+  /* FUENTE */
+  --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* TABLAS */
+  --row-h: 28px; 
+}
+
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+/* ===========================================================
+RESET / BASE
+=========================================================== */
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background: var(--dark-bg);
+  color: var(--text-primary);
+}
+
+
+
+/* =================================================================
+====================================================================
+====================================================================
+LAYOUT GENERAL
+====================================================================
+====================================================================
+================================================================= */
+.boot-screen{
+  position: fixed;
+  inset: 0;
+  background: #0b0b0b; /* o tu var(--dark-bg-1) */
+  z-index: 9999;
+}
+
+.login-shell{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0b0b0b;
+}
+
+.traderoom {
+  height: 100vh;
+  display: flex;
+  background: var(--dark-bg);
+  overflow: hidden;              /* evita scroll del body; el scroll vive en los paneles */
+}
+
+/* GRID GENERAL: SIDELEFT + MAIN TOP + POSITIONS */
+.tr-layout {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 49px 1fr;          /* ancho barra + contenido */
+  grid-template-rows: 1fr auto;             /* fila superior (chart) + fila inferior (positions) */
+  height: 100%;
+  min-height: 0;
+}
+
+
+/* =================================================================
+====================================================================
+====================================================================
+SIDELEFT1
+====================================================================
+====================================================================
+================================================================= */
+.sideleft1 {
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  background: var(--dark-bg);
+  width: 49px;
+  position: relative;         
+  z-index: 10; 
+  border-right: 1px solid var(--border-bg);               
+}
+
+
+
+.sl-group {
+  width: 100%;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--dark-bg-hover);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sl-group2 {
+  border-top: 1px solid var(--dark-bg-hover);
+  border-bottom: 4px solid var(--dark-bg-hover) !important;
+}
+
+.sl-btn2 {
+  height: 26px !important;
+}
+
+/* Especial: este se va hasta el fondo */
+.sl-group-bottom {
+  margin-top: auto;  
+  border-bottom: none;
+}
+
+.sl-group:last-child {
+  border-bottom: none;
+}
+
+.sl-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.05s ease;
+}
+
+.sl-btn i {
+  pointer-events: none;
+}
+
+/* Hover tipo TradingView */
+.sl-btn:hover {
+  background: var(--dark-bg-hover);
+  color: #e5e9ef;
+}
+
+/* Botón activo (azul TradingView) */
+.sl-btn.active,
+.sl-btn:focus {
+  background: var(--dark-bg-hover);
+  outline: none;
+}
+
+.positions-panel {
+  padding: 0 !important;
+}
+
+
+/* =============================================================
+MAIN MENU (MT5 STYLE)
+============================================================== */
+.mm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: transparent;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;            
+}
+
+/* Panel principal */
+.mm-panel {
+  margin-top: 0;
+  margin-left: 49px;   /* ancho de la barra lateral */
+  width: 238px;
+  background: var(--dark-bg-hover);
+  color: #e5e7eb;
+  border-radius: 0 0 6px 0;
+  overflow: visible;
+}
+
+/* Header */
+.mm-header {
+  background: var(--dark-bg-hover);
+  padding: 8px 10px;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative; 
+  overflow: hidden;
+}
+
+.mm-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mm-title-icon {
+  font-size: 14px;
+  color: var(--c-buy);
+}
+
+.mm-title-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mm-close-btn {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+}
+
+.mm-close-btn:hover {
+  color: #e5e7eb;
+}
+
+.mm-name {
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.mm-account {
+  font-size: 12px;
+  color: #a5b1c7;
+  margin-top: 4px;
+}
+
+/* Badge DEMO */
+.mm-badge {
+  position: absolute;
+  top: 40px;
+  right: -17px;
+  background: var(--c-buy);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 28px;
+  transform: rotate(45deg); 
+  transform-origin: top right;
+  pointer-events: none;
+}
+
+/* Lista de items */
+.mm-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.mm-group-label {
+  padding: 8px 12px 4px;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.mm-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 10px;
+  cursor: pointer;
+  color: #d1d5db;
+}
+
+.mm-item:hover {
+  background: var(--dark-bg-hover2);
+}
+
+.mm-item-icon {
+  width: 18px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.mm-item-label {
+  flex: 1;
+}
+
+.mm-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mm-icon {
+  font-size: 16px;
+  color: #d1d5db;
+}
+
+.mm-label {
+  white-space: nowrap;
+}
+
+.mm-arrow {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.mm-right-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mm-lang {
+  font-size: 14px;
+  color: #d1d5db;
+}
+
+/* Subpanel a la derecha (Chart settings) */
+.mm-subpanel {
+  margin-top: 0;
+  margin-left: 0;      /* 🔥 quitar el margen que lo separaba */
+  width: 260px;
+  background: var(--dark-bg-hover);
+  color: #e5e7eb;
+  box-shadow: 12px 12px 30px rgba(0, 0, 0, 0.55);
+  border-radius: 0 0 4px 0;
+  padding: 6px 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.mm-item-chart-settings {
+  position: relative; /* referencia para el subpanel */
+}
+
+/* Subpanel oculto por defecto */
+.mm-item-chart-settings .mm-subpanel {
+  position: absolute;
+  top: 0;
+  left: 100%;         /* pegado a la derecha del li principal */
+  margin-left: 0;
+  width: 260px;
+  background: var(--dark-bg-hover);
+  color: #e5e7eb;
+  box-shadow: 12px 12px 30px rgba(0, 0, 0, 0.55);
+  border-radius: 0 0 4px 0;
+  padding: 6px 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* 🔥 Mostrar subpanel cuando haces hover en Chart settings */
+.mm-item-chart-settings:hover .mm-subpanel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.mm-sub-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mm-sub-item:hover {
+  background: var(--dark-bg-hover2);
+}
+
+.mm-sub-title {
+  font-weight: 600;
+}
+
+/* Asegurar que el overlay no rompa el layout */
+.traderoom {
+  position: relative;
+}
+
+
+
+/* =================================================================
+====================================================================
+====================================================================
+MAIN-TOP: TradingForm + Chart + Watchlist
+====================================================================
+====================================================================
+================================================================== */
+.main-top {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  min-height: 0;  
+  padding: 0;
+  gap: 0;
+  background: var(--dark-bg);
+  overflow: hidden; 
+}
+
+
+/* =================================================================
+====================================================================
+====================================================================
+TRADING FORM
+====================================================================
+====================================================================
+================================================================= */
+.trading-form {
+  position: relative;
+  background: var(--dark-bg);
+  border-right: 1px solid var(--border-bg);
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+  flex: 0 0 auto;     /* ancho fijo de 320px, cámbialo al que quieras */
+  width: 400px;
+  height: 100%;       /* que tome la altura disponible del área de trabajo */
+  max-height: 100vh;
+  padding: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ot-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--dark-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  height: 100% !important; 
+}
+
+/* HEADER */
+.ot-header {
+  display: grid;
+  grid-template-columns: 1fr 52px;
+  border-bottom: 4px solid var(--border-bg);
+  background: var(--dark-bg);
+  flex-shrink: 0;
+}
+
+.ot-type {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.ot-type i {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ot-close {
+  border: none;
+  border-left: 1px solid var(--border-medium);
+  background: transparent;
+  color: #3b82f6;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ot-close:hover {
+  background: var(--dark-bg-hover2);
+}
+
+/* BODY */
+.ot-body {
+  padding: 16px 12px 18px 12px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0; 
+  gap: 30px !important;
+}
+
+/* Labels */
+.ot-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+
+.ot-field-header:first-of-type {
+  margin-top: 0;
+}
+
+.ot-right-text {
+  color: var(--text-secondary);
+}
+
+/* Steppers */
+.ot-stepper {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  border: 1px solid var(--border-medium);
+  background: var(--dark-bg);
+}
+
+.ot-stepper-lg {
+  height: 39px;
+}
+
+.ot-stepper:not(.ot-stepper-lg) {
+  height: 39px;
+}
+
+.ot-step-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.ot-step-btn:hover {
+  background: #202635;
+}
+
+/* ===============================
+   BOTONES + / - SIN FOCUS AZUL
+================================ */
+
+.ot-step-btn,
+.ot-step-btn2 {
+  outline: none;
+  box-shadow: none;
+}
+
+/* cuando quedan enfocados después del click */
+.ot-step-btn:focus,
+.ot-step-btn:focus-visible,
+.ot-step-btn2:focus,
+.ot-step-btn2:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* evitar borde del navegador */
+.ot-step-btn::-moz-focus-inner,
+.ot-step-btn2::-moz-focus-inner {
+  border: 0;
+}
+
+
+.ot-step-value {
+  text-align: center;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+/* StopLoss / TakeProfit en 2 columnas */
+.ot-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.mt-form {
+  margin-top: 15px;
+}
+
+.mt-form2 {
+  margin-top: 8px;
+}
+
+.ot-textarea {
+  border: 1px solid var(--border-medium);
+  background: transparent;
+  height: 39px !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Precios */
+.ot-prices {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  background: var(--dark-bg-active);
+  border-bottom: none;
+  height: 39px;
+}
+
+.ot-price {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.ot-price-left {
+  border-right: none;
+}
+
+.ot-price-right {
+  border-left: none;
+}
+
+.ot-price-divider {
+  width: 1px;
+  background: var(--border-divider);
+}
+
+/* Botones SELL / BUY */
+.ot-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 39px;
+}
+
+.ot-aw {
+    display: grid;
+    width: 100% !important;
+    height: 39px;
+}
+
+.ot-btn {
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.ot-btn-sell {
+  background: #e05750; /* rojo MT5 */
+}
+
+.ot-btn-sell:hover {
+  background: #d13b34;
+}
+
+.ot-btn-buy {
+  background: #3b82f6; /* azul MT5 */
+}
+
+.ot-btn-buy:hover {
+  background: #2563eb;
+}
+
+.ot-btn-close {
+    background: #EC6F18;
+}
+
+.ot-btn-close:hover {
+    background: #FF8834;
+}
+
+/* ===== ERRORES DEL TRADINGFORM ====== */
+.ot-form-error {
+  background: rgba(255, 70, 70, 0.2);
+  border: 1px solid #ff4a4a;
+  color: #ff6b6b;
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* ====== BOTONES DISABLED ====== */
+
+.ot-btn[disabled],
+.ot-btn-disabled {
+  background: #2D3032 !important; /* DISABLED */
+  cursor: not-allowed;
+}
+
+/* Fondo de error en el bloque de acciones (Sell/Buy) */
+.ot-actions--error-buy {
+  background: linear-gradient(90deg, rgba(59,130,246,0.14), transparent);
+}
+
+.ot-actions--error-sell {
+  background: linear-gradient(90deg, rgba(239,68,68,0.14), transparent);
+}
+
+/* Si quieres un borde arriba como MT5 */
+.ot-actions--error-buy {
+  border-top: 1px solid rgba(59,130,246,0.6);
+}
+
+.ot-actions--error-sell {
+  border-top: 1px solid rgba(239,68,68,0.6);
+}
+
+/* ============================
+   ESTILO INPUTS DESHABILITADOS
+   (Price / Comment en modo edición)
+============================ */
+.ot-step-value-input[disabled],
+.ot-textarea[disabled] {
+  background: #2D3032;      /* gris como los botones disabled */
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* por si algún día hay placeholder */
+.ot-textarea[disabled]::placeholder {
+  color: #4b5563;
+}
+
+/* ============================================
+   PRICE BLOQUEADO EN MODO EDICIÓN
+============================================ */
+
+/* Contenedor completo del stepper */
+.ot-stepper--disabled {
+  background: #2d3032 !important;
+  border-color: #2d3032 !important;
+}
+
+/* Input dentro del stepper bloqueado */
+.ot-stepper--disabled .ot-step-value-input {
+  background: transparent !important; /* usa el fondo del contenedor */
+  color: #858b98 !important;
+  cursor: not-allowed !important;
+}
+
+/* Botones + y - bloqueados */
+.ot-stepper--disabled .ot-step-btn {
+  background: transparent !important; /* mismo gris del contenedor */
+  color: #4b5563 !important;
+  cursor: not-allowed !important;
+}
+
+/* Sin efecto hover */
+.ot-stepper--disabled .ot-step-btn:hover {
+  background: transparent !important;
+}
+
+
+/* ===============================
+   QUITAR SPINNERS DE INPUT NUMBER
+================================ */
+
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
+/* ====== SELECT "MARKET EXECUTION" REAL ====== */
+
+.ot-type-wrap {
+  position: relative;
+  height: 100%;
+}
+
+.ot-type-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 400;
+  padding: 10px 32px 10px 16px;
+  width: 100%;
+  height: 39px;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Quitar focus azul nativo */
+.ot-type-select:focus,
+.ot-type-select:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Evitar que el contenedor se pinte */
+.ot-type-wrap:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.ot-type-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+
+/* ===========================================================
+Barra de edición cuando vienes de doble click en una posición
+=========================================================== */
+.ot-type-edit-header {
+  padding: 11px 8px 8px 8px;
+  font-size: 14px;
+  font-weight: 400;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  height: 39px;
+}
+
+/* Rojo para sell, azul para buy, igual que MT */
+.ot-type-edit-sell {
+  color: #f36a6a;
+}
+
+.ot-type-edit-buy {
+  color: #4d8dff;
+}
+
+
+/* ===========================================================
+DROPDOWN TIPO INPUT
+=========================================================== */
+.ot-select2-wrap {
+  position: relative;
+  width: 100%;
+  height: 39px; /* mismo alto que stepper */
+  border: 1px solid var(--border-medium);
+  background: var(--dark-bg);
+  display: flex;
+  align-items: center;
+}
+
+.ot-select2-wrap:hover, .ot-textarea,
+.ot-input-wrap:hover {
+  border-color: var(--c-buy);
+}
+
+.ot-select2-wrap:focus-within,
+.ot-input-wrap:focus-within {
+  border-color: var(--c-buy);
+}
+
+.ot-select2 {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0 42px 0 16px; /* espacio para la flecha */
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ot-select2:focus {
+  outline: none;
+  border: none;
+}
+
+.ot-select2-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+/* ====== INPUTS DENTRO DE LOS STEPPERS ====== */
+
+.ot-step-value-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: center;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.ot-step-value-input:focus {
+  outline: none;
+}
+
+/* ====== TEXTAREA REAL PARA COMMENT ====== */
+
+.ot-textarea {
+  width: 100%;
+  border: 1px solid var(--border-medium);
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.ot-textarea:focus,
+.ot-textarea:focus-visible {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+
+/* ===========================================================
+DIV DE ALERTS DE OPEN POSITIONS Y PENDING POSITIONS
+=========================================================== */
+.tf-result-overlay {
+  position: absolute;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dark-bg);
+  z-index: 40;
+}
+
+/* Tarjeta del resultado */
+.tf-result-card {
+  width: 100%;
+  height: 100%;
+  background: var(--dark-bg);
+  padding: 32px 0 0 0;
+  position: relative;              /* para posicionar la X dentro */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header SOLO para el texto, centrado */
+.tf-result-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.tf-result-title {
+  font-size: 20px;
+  font-weight: 400;
+  padding-top: 15px;
+  padding-left: 15px;
+  padding-right: 15px;
+  color: #f5f6fb;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* X igual que la del trading-form, pero respecto a toda la card */
+.tf-result-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* Cuerpo del modal */
+.tf-result-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;                 /* separación entre 'Terminado' y el botón */
+}
+
+.tf-result-status {
+  font-size: 20px;
+  font-weight: 400;
+  color: #3acb8a; /* verde 'Terminado' */
+}
+
+/* Botón OK como barra azul al 100% */
+.tf-result-ok {
+  width: 100%;
+  border: none !important;
+  padding: 11px 0 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  text-align: center !important;
+  cursor: pointer;
+  background: var(--c-blue);
+  color: #ffffff;
+}
+
+.tf-result-card .ot-close {
+  border-left: none !important;
+  padding-left: 0 !important;
+}
+
+/* Desactivar hover de la X solo dentro del panel interno */
+.tf-result-card .ot-close:hover {
+  background: transparent !important;
+}
+
+.tf-result-ok:hover {
+  filter: brightness(1.05);
+}
+
+
+
+
+
+
+
+
+
+/* ================================
+   INPUTS: SOLO HOVER/FOCUS AZUL
+================================ */
+.ot-stepper:hover{
+  border-color: var(--c-buy);           /* <- hover azul */
+}
+
+.ot-stepper:focus-within{
+  border-color: var(--c-buy);           /* <- focus azul */
+  box-shadow: 0 0 0 1px rgba(59,130,246,.35);
+}
+
+/* ---------- INPUT NUMBER ---------- */
+.ot-step-value-input{
+  outline: none;
+  border: none;
+  background: transparent;
+}
+
+/* ---------- SELECT ---------- */
+.ot-type-select:hover,
+.ot-select2:hover{
+  border-color: var(--c-buy);
+}
+.ot-type-select:focus,
+.ot-select2:focus{
+  border-color: var(--c-buy);
+  box-shadow: 0 0 0 1px rgba(59,130,246,.35);
+}
+
+/* ---------- TEXTAREA ---------- */
+
+.ot-textarea:hover{
+  border-color: var(--c-buy);
+}
+.ot-textarea:focus{
+  border-color: var(--c-buy);
+  box-shadow: 0 0 0 1px rgba(59,130,246,.35);
+}
+
+/* ===============================
+   COMMENT DISABLED – SIN AZUL
+================================ */
+
+.ot-textarea[disabled],
+.ot-textarea[disabled]:hover,
+.ot-textarea[disabled]:focus,
+.ot-textarea[disabled]:focus-visible {
+  border-color: var(--border-medium) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: #2D3032;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+
+
+/* ====================================================================
+=======================================================================
+=======================================================================
+CHART
+=======================================================================
+=======================================================================
+==================================================================== */
+.chart {
+  position: relative;
+  flex: 1 1 auto;      /* se estira para rellenar */
+  width: 100%;
+  height: 100%;        /* ocupa toda la altura disponible del área central */
+  max-height: 100vh;
+  min-width: 0; 
+  background: var(--dark-bg);
+  border: none !important;
+  padding: 0;
+  border-radius: 0;
+}
+
+
+
+/* ===========================================================
+RESIZE TRADINGVIEW + PANELS (anti-iframe / anti-select)
+=========================================================== */
+
+/* 1) Mientras resizeas: nada selecciona texto */
+body.is-resizing,
+body.is-resizing * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* 2) Cursor global mientras drag */
+body.is-resizing {
+  cursor: col-resize;
+}
+
+/* 3) TradingView (iframe) NO captura mouse mientras drag */
+body.is-resizing .tradingview-widget-container,
+body.is-resizing .tradingview-widget-container iframe,
+body.is-resizing .tradingview-widget-container__widget,
+body.is-resizing .tv-chart iframe {
+  pointer-events: none !important;
+}
+
+/* 4) Evita que watchlist/positions/chart “agarren” clicks/selection durante drag */
+body.is-resizing .watchlist,
+body.is-resizing .positions,
+body.is-resizing .chart {
+  pointer-events: none !important;
+}
+
+/* 5) Handles SIEMPRE arriba y clickeables */
+.resize-handle,
+.handle-right,
+.handle-left,
+.handle-top {
+  position: absolute;
+  z-index: 9999;
+  pointer-events: auto !important;
+}
+
+
+
+
+/* El TradingView chart ocupa TODO */
+.tv-chart {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;              /* Debajo de los toolbars */
+}
+
+/* El DIV amarillo */
+.chart-top-banner {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  background: none;
+  color: #000;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: 10;
+}
+
+.symbol-name{
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* BOTONES */
+.btn-row {
+  display: flex;
+  gap: 8px;              /* separación entre botones */
+}
+
+.fa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;               /* espacio entre ícono y texto */
+  padding: 7px 8px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.fa-btn i {
+  font-size: 18px;
+}
+
+.fa-btn:hover {
+  background: var(--dark-bg-hover);
+  border-color: var(--c-buy);
+}
+
+.fa-btn:active {
+  background: #111827;
+}
+
+.dual-icon {
+  font-size: 14px;                 /* ajusta al tamaño que ya uses */
+  background: linear-gradient(
+    90deg,
+    #e05750 0%,
+    #e05750 50%,
+    #3b82f6 50%,
+    #3b82f6 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;              /* importante para que se vea el gradiente */
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.dual-icon--active {
+  background: none;
+  color: var(--text-primary);
+}
+
+
+/* ===========================================================
+FORM BUY SELL MARKET CHART
+=========================================================== */
+.chart-top-left-box {
+  position: absolute;
+  top: 50px;     
+  left: 67px;
+  z-index: 40;  
+}
+
+.tf-quick-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+/* BLOQUES SELL / BUY (azules) */
+.tf-quick-side {
+  display: flex;
+  align-items: stretch;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.tf-quick-block {   
+  color: #f5f5f5;
+}
+
+.tf-quick-side-buy .tf-quick-label {
+    background: #2B6FD9;
+}
+
+.tf-quick-side-buy .tf-quick-price {
+    background: #3b82f6;
+}
+
+.tf-quick-side-buy .tf-quick-price:hover {
+  filter: brightness(1.05);
+}
+
+.tf-quick-side-sell .tf-quick-label {
+    background: #C74142;
+}
+
+.tf-quick-side-sell .tf-quick-price {
+    background: #EA4C4D;
+}
+
+.tf-quick-side-sell .tf-quick-price:hover {
+  filter: brightness(1.05);
+}
+
+.tf-quick-block {
+  border: none;
+  padding: 6px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tf-quick-price {
+  min-width: 67px;
+  text-align: center;
+}
+
+.tf-quick-label {
+  min-width: 43px;
+  text-align: center;
+}
+
+/* VOLUMEN CENTRAL */
+.tf-quick-volume {
+  flex: 0 0 auto;
+}
+
+.tf-quick-volume-inner {
+  display: flex;
+  align-items: center;
+  background-color: #151c26;         
+  border-radius: 4px;
+  padding: 6px 10px;
+  min-width: 110px;
+  justify-content: space-between;
+  border: 1px solid #252c36;
+}
+
+.tf-quick-vol-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* FLECHAS */
+.tf-quick-vol-arrow {
+  font-size: 12px;
+  color: #d0d4dd;
+  cursor: pointer;
+  padding: 0 4px;
+  user-select: none;
+}
+
+.tf-quick-vol-arrow:hover {
+  color: #ffffff;
+}
+
+/* Versión up/down por si luego metes JS */
+.tf-quick-vol-arrow-up {
+  transform: translateY(-1px);
+}
+
+.tf-quick-vol-arrow-down {
+  transform: translateY(1px);
+}
+
+
+/* ============================
+INPUT CENTRAL
+============================ */
+.ot-stepper2 {
+    width: 100px;
+    height: 24px;
+    background: #111722;
+    border: 1px solid #2a3140;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 2px;
+    padding: 0px 2px;
+}
+
+.ot-stepper-lg2 {
+    height: 24px;
+}
+
+/* Botones + y - */
+.ot-step-btn2 {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #ffffffd2;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+}
+
+.ot-step-btn2:hover {
+    background: #1e2533;
+}
+
+/* Input central */
+.ot-step-value-input2 {
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: white;
+}
+
+.ot-step-value-input2::-webkit-inner-spin-button,
+.ot-step-value-input2::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+
+
+
+
+/* ===== ALERTS DE OPERACIONES ===== */
+.trade-alerts-wrapper {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none; /* para que no estorben clics del chart */
+}
+
+.trade-alert {
+  min-width: 260px;
+  max-width: 420px;
+  background: rgba(20, 25, 35, 0.96);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f5f5f5;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  border-left: 3px solid #4a90e2;
+  pointer-events: auto; /* por si quieres hacer hover */
+}
+
+/* variantes por tipo de alerta */
+.trade-alert--market {
+  border-left-color: #4caf50; /* verde */
+}
+
+.trade-alert--pending {
+  border-left-color: #ffc107; /* amarillo */
+}
+
+.trade-alert__title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.trade-alert__text {
+  opacity: 0.9;
+}
+
+/* animación suave tipo toast */
+.trade-alert-fade-enter-active,
+.trade-alert-fade-leave-active {
+  transition: all 0.25s ease;
+}
+.trade-alert-fade-enter-from,
+.trade-alert-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+
+
+
+
+/* =================================================================
+====================================================================
+====================================================================
+WATCHLIST 
+====================================================================
+====================================================================
+================================================================= */
+.watchlist {
+  position: relative !important;
+  background: var(--dark-bg) !important;
+  border-left: 1px solid var(--border-bg) !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  flex: 0 0 auto !important;
+  width: 400px;
+  display: flex;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+  min-height: 0 !important;
+}
+
+/* Barra de búsqueda */
+.wl-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 42px; 
+  border-top: 1px solid var(--border-bg) !important;
+  border-bottom: 4px solid var(--border-bg) !important;
+  box-sizing: border-box;    
+  width: 100%;
+  height: 43px !important;
+  background: var(--dark-bg) !important;
+}
+
+.wl-search-icon {
+  position: absolute;
+  font-size: 16px !important;
+  color: var(--text-secondary);
+  margin-right: 12px;
+  left: 14px;
+  pointer-events: none;
+}
+
+.wl-search-input {
+  flex: 1;
+  width: 100%;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 16px !important;
+  font-family: inherit;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.wl-search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.wl-search-input:focus {
+  outline: none;
+  border: none;
+}
+
+
+/* ======================================================
+MARKET WATCH TABLE
+====================================================== */
+/* Filas base */
+.mw-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+/* Header */
+.mw-header {
+  flex: 0 0 auto !important;
+  font-size: 12px !important;
+  color: var(--text-secondary) !important;
+  background: transparent;
+  border-bottom: 1px solid var(--border-bg) !important;
+}
+
+.mw-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+}
+
+.mw-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mw-body::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: 6px;
+}
+
+.mw-symbol-head {
+  text-transform: none;
+}
+
+/* Celdas */
+.mw-cell {
+  display: flex;
+  align-items: center;
+}
+
+.mw-symbol {
+  gap: 8px;
+}
+
+.mw-right {
+  justify-content: flex-end;
+}
+
+/* Colores de filas */
+.mw-row:nth-child(odd):not(.mw-header) {
+  background: transparent;
+  border-bottom: 1px solid var(--border-bg) !important;
+}
+
+.mw-row:nth-child(even):not(.mw-header) {
+  background: transparent;
+  border-bottom: 1px solid var(--border-bg) !important;
+}
+
+.mw-row2:hover {
+  background: none !important; cursor: pointer;
+}
+
+/* Fila seleccionada (resaltada) */
+.mw-row-active {
+  background: #1e2634;
+}
+
+.watchlist-row.active {
+  background: var(--dark-bg-hover) !important;
+  cursor: pointer;
+}
+
+
+/* Iconos estado */
+.mw-icon-up {
+  color: var(--c-buy);   /* verde */
+  font-size: 14px;
+}
+
+.mw-icon-down {
+  color: var(--c-sell);   /* rojo */
+  font-size: 14px;
+}
+
+.mw-icon-neutral {
+  color: #9ca3af;   /* gris */
+  font-size: 8px;
+}
+
+/* Colores Bid/Ask / cambio */
+.mw-bid-up,
+.mw-ask-up {
+  color: var(--c-buy);   /* azul */
+}
+
+.mw-bid-down,
+.mw-ask-down {
+  color: var(--c-sell);   /* rojo */
+}
+
+.mw-change-up {
+  color: var(--c-buy);
+}
+
+
+
+/* =================================================================
+====================================================================
+====================================================================
+POSITIONS
+====================================================================
+====================================================================
+================================================================== */
+.positions {
+  position: relative;
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  flex: 0 0 auto;
+  background: var(--dark-bg);
+  border-top: 1px solid var(--border-bg);
+  padding: 0;
+  color: var(--text-secondary);
+  min-height: 20px;
+  height: 220px;
+}
+
+
+
+/* =================================================================
+POSITIONS, PENDING TABLE
+================================================================= */
+.pos-table-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--dark-bg);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* zona scrollable */
+.pos-table-scroll {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* tabla base */
+.pos-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+}
+
+/* header */
+.pos-table thead tr {
+  background: var(--dark-bg);
+}
+
+.pos-table th {
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 400 !important;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-bg);
+  white-space: nowrap;
+}
+
+.pos-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--dark-bg);           
+  font-size: 14px;
+}
+
+/* cuerpo */
+.pos-table tbody tr.pos-row {
+  background: var(--dark-bg);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pos-table tbody tr.pos-row:nth-child(odd) {
+  background: var(--dark-bg);
+}
+
+.his-row:hover {
+  background: var(--dark-bg-hover2);
+  cursor: pointer;
+}
+
+.pos-table td {
+  padding-right: 10px;
+  padding-left: 10px;
+  border-bottom: 1px solid var(--border-bg);
+  white-space: nowrap;
+}
+
+/* hover fila posición */
+.pos-table tbody tr.pos-row:hover {
+  background: var(--dark-bg-hover2);
+}
+
+/* columnas alineadas numéricas */
+.pos-table .col-volume,
+.pos-table .col-price-open,
+.pos-table .col-price-current,
+.pos-table .col-sl,
+.pos-table .col-tp,
+.pos-table .col-commission,
+.pos-table .col-fee,
+.pos-table .col-swap,
+.pos-table .col-profit {
+  text-align: right;
+}
+
+/* ============================================================
+   FIX: evitar que las columnas cambien ancho cuando cambian dígitos
+============================================================ */
+
+/* 1) Fija el layout de la tabla: anchos estables */
+.pos-table,
+.positions-table2 {
+  table-layout: fixed;
+}
+
+/* 2) Evita que el contenido empuje columnas (usa ellipsis si se pasa) */
+.pos-table th,
+.pos-table td,
+.positions-table2 th,
+.positions-table2 td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 3) Números con ancho uniforme (IMPORTANTÍSIMO) */
+.pos-table td,
+.pos-table th,
+.positions-table2 td,
+.positions-table2 th {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* TIME (fecha) más ancha sin mover lo demás */
+.pos-table th.col-time,
+.pos-table td.col-time {
+  width: 190px;   /* ajusta: 180, 200, 220... */
+}
+
+.pos-table td.col-time {
+  text-overflow: clip;
+}
+
+/* ============================================================
+   HISTORY – columnas Time más anchas (solo history)
+============================================================ */
+
+.positions-table2 th.col-time2,
+.positions-table2 td.col-time2,
+.positions-table2 th.col-time-dup2,
+.positions-table2 td.col-time-dup2 {
+  width: 190px;           /* suficiente para 2025.12.09 14:02:04 */
+  text-overflow: clip;   /* sin "..." */
+}
+
+/* =========================================
+   TABLAS – ALTURA FIJA DE FILAS
+========================================= */
+
+.pos-table tr,
+.positions-table2 tr {
+  height: var(--row-h);
+}
+
+.pos-table td,
+.pos-table th,
+.positions-table2 td,
+.positions-table2 th {
+  height: var(--row-h);
+  line-height: var(--row-h);      /* 🔥 CLAVE */
+  padding-top: 0;
+  padding-bottom: 0;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.pos-table td,
+.positions-table2 td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pos-table,
+.positions-table2 {
+  table-layout: fixed;
+}
+
+.pos-summary-row td,
+.pos-summary-row2 td {
+  height: var(--row-h);
+  line-height: var(--row-h);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* 1) Open Positions summary */
+.pos-summary-row td{
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  vertical-align: middle;
+}
+
+/* 2) History summary */
+.pos-summary-row2 td{
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  vertical-align: middle;
+}
+
+/* (Opcional) si la fila en sí misma está forzando altura */
+.pos-summary-row,
+.pos-summary-row2{
+  height: var(--row-h) !important;
+}
+
+
+/* ============================================================
+   HISTORY – Profit igual a Open Positions
+============================================================ */
+
+.positions-table2 .col-profit2 {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* colores iguales */
+.positions-table2 .pos-profit-pos2 {
+  color: var(--c-buy);
+}
+
+.positions-table2 .pos-profit-neg2 {
+  color: var(--c-sell);
+}
+
+
+/* tipo buy / sell */
+.pos-type-buy {
+  color: var(--c-buy); 
+}
+
+.pos-type-sell {
+  color: var(--c-sell); 
+}
+
+/* MODAL DE POSITION: BUY, SELL, BUY STOP, SELL STOP, BUY LIMIT, SELL LIMIT, BUY STOP LIMIT, SELL STOP LIMIT */
+.alert-side-buy {
+  color: var(--c-buy);  
+  font-weight: 400;
+}
+
+.alert-side-sell {
+  color: var(--c-sell);   
+  font-weight: 400;
+}
+
+.trade-alert--buy {
+  background-color: rgba(77, 163, 255, 0.14);
+  border-left: 3px solid var(--c-buy);
+}
+
+.trade-alert--sell {
+  background-color: rgba(255, 107, 107, 0.14);
+  border-left: 3px solid var(--c-sell);
+}
+
+.trade-alert__status {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(148, 163, 184, 0.18);
+  color: #e5e7eb;
+}
+
+/* profit colores */
+.pos-profit-pos {
+  color: var(--c-buy);
+}
+
+.pos-profit-neg {
+  color: var(--c-sell);
+}
+
+/* Colores USD según profit total de posiciones abiertas */
+.usd-pos {
+  color: var(--c-buy) !important;   /* azul / buy */
+}
+
+.usd-neg {
+  color: var(--c-sell) !important;  /* rojo / sell */
+}
+
+/* fila resumen (Balance / Equity / Margin / Free margin / Level) */
+.pos-summary-row {
+  position: sticky;
+  top: 26px; 
+  bottom: 0;
+  z-index: 3;
+  z-index: 2; /* <- vamos a bajarlo un poco */
+}
+
+.pos-summary-row td {
+  background: var(--dark-bg-hover);
+  border-top: 1px solid var(--border-bg);
+  border-bottom: 0;              /* evita la ranura de borde */
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+
+.summary-info {
+  white-space: nowrap;
+}
+
+/* Columnas "fantasma" 10 y 11 (Commission, Fee) */
+.col-hidden {
+  width: 0;
+  padding: 0;
+  border: none;
+  font-size: 0;
+  color: transparent;
+}
+
+/* Celda combinada del resumen */
+.pos-summary-cell {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: #171c26; /* el gris de la fila sombreada */
+}
+
+.col-extra1,
+.col-extra2 {
+  width: 40px;         
+}
+
+/* ======== ESTRUCTURA 14 COLUMNAS / 12 VISIBLES ======== */
+.pos-table--open th.col-commission,
+.pos-table--open th.col-fee,
+.pos-table--open td.col-commission,
+.pos-table--open td.col-fee {
+  display: none;
+}
+
+/* ===================== */
+/*      CLOSE BUTTONS    */
+/* ===================== */
+
+/* X dentro de SL / TP */
+.close-mini-btn {
+    margin-right: 10px;
+    border: none;
+    background: transparent;
+    color: #c94d4d;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 14px;
+    opacity: 0.8;
+}
+
+.close-mini-btn:hover {
+    color: #ff5f5f;
+    opacity: 1;
+}
+
+/* Botón X grande de cerrar operación */
+.close-big-btn {
+    color: var(--text-primary);
+    background: none;
+    cursor: pointer;
+    font-size: 14px; /* aqui */
+    transition: 0.15s;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.close-big-btn:hover {
+    color: #fff;
+}
+
+
+
+/* =================================================================
+HISTORY TABLE
+================================================================= */
+/* Tabla */
+.positions-table2 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px !important;
+}
+
+/* Quitar negritas del header de HISTORY */
+.positions-table2 th,
+.positions-table2 thead th {
+  font-weight: 400 !important;   /* o "normal" */
+}
+
+.positions-table2 thead {
+  font-size: 14px !important;
+}
+
+/* Header fijo (history) */
+.positions-table2 thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--dark-bg);        /* ajusta si tu header usa otro tono */
+}
+
+.positions-table2 th,
+.positions-table2 td {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: 1px solid var(--dark-bg-hover);
+  white-space: nowrap;
+}
+
+/* Fila resumen HISTORY pegada abajo */
+.pos-summary-row2 {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+}
+
+/* Celdas de la fila resumen */
+.pos-summary-row2 td {
+  background: var(--dark-bg-hover);
+  border-top: 1px solid var(--border-bg);
+  border-bottom: 0;    
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+
+/* Hover fila normal */
+.pos-row2:hover {
+  background-color: #1c2733;
+}
+
+/* Fila resumen */
+.pos-summary-row2 {
+  border-top: 1px solid var(--dark-bg-hover);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* Texto dentro de celda combinada resumen */
+.summary-text2 {
+  text-align: left;
+  padding-left: 10px;
+  font-size: 13px;
+}
+
+/* PROFIT positivo */
+.pos-profit-pos2 {
+  color: var(--c-buy);
+}
+
+/* PROFIT negativo */
+.pos-profit-neg2 {
+  color: var(--c-sell);
+}
+
+/* Colores para Buy/Sell */
+.pos-type-buy2 {
+  color: var(--c-buy);
+}
+
+.pos-type-sell2 {
+  color: var(--c-sell);
+}
+
+.pos-summary-row2,
+.pos-summary-row2 td,
+.pos-summary-row2 * {
+  font-family: system-ui, sans-serif !important;
+  font-weight: 400 !important;
+}
+
+/* =========================================
+   FIX FINAL: Summary rows con altura fija
+========================================= */
+
+/* Open Positions summary */
+.pos-summary-row,
+.pos-summary-row td {
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+}
+
+.pos-summary-row td {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  /* deja el padding lateral si lo quieres */
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* History summary */
+.pos-summary-row2,
+.pos-summary-row2 td {
+  height: var(--row-h) !important;
+  line-height: var(--row-h) !important;
+}
+
+.pos-summary-row2 td {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+
+
+/* ============================================================
+ALINEACIONES POR COLUMNA (solo history)
+============================================================ */
+
+/* IZQUIERDA */
+.col-time2,
+.col-symbol2 {
+  text-align: left;
+}
+
+/* DERECHA */
+.col-ticket2,
+.col-type2,
+.col-volume2,
+.col-price2,
+.col-sl2,
+.col-tp2,
+.col-time-dup2,
+.col-price-dup2,
+.col-commission2,
+.col-fee2,
+.col-swap2,
+.col-profit2 {
+  text-align: right;
+}
+
+.col-source,
+.col-message {
+  text-align: left;
+}
+
+
+/* ============================================================
+ALINEACIONES POR COLUMNA (solo journal)
+============================================================ */
+.journal-row {
+  height: 28px;
+}
+
+.journal-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #e5e7eb;
+}
+
+/* filas de error (Network) */
+.journal-row.network {
+  background: rgba(127, 29, 29, 0.35);
+}
+
+/* filas sistema */
+.journal-row.system {
+  color: #cbd5f5;
+}
+
+
+
+/* ============================================================
+AJUSTES EXTRAS
+============================================================ */
+
+/* Quita padding lateral en <section> si es necesario */
+#historySection, 
+#positionsSection {
+  padding: 0 !important;
+}
+
+
+/* ==================================================================
+BORDERS AJUSTABLES - TRADINGFORM, WATCHLIST, POSITIONS
+=================================================================== */
+/* Handles genéricos de resize */
+.resize-handle {
+  position: absolute;
+  z-index: 20;
+  background: transparent;
+}
+
+.resize-handle.active {
+  background: #3b82f6;             /* Azul MT5 */
+  box-shadow: 0 0 6px rgba(59,130,246,0.7);
+}
+
+/* TradingForm: borde derecho draggable */
+.resize-handle-right {
+  top: 0;
+  right: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+/* Watchlist: borde izquierdo draggable */
+.resize-handle-left {
+  top: 0;
+  left: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+/* Positions: borde superior draggable */
+.resize-handle-top {
+  top: -2px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  cursor: row-resize;
+}
+
+/* Opcional: feedback visual al pasar el mouse */
+.resize-handle-right:hover,
+.resize-handle-left:hover,
+.resize-handle-top:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+
+
+/* ==========================================================
+=============================================================
+=============================================================
+MODAL CUENTAS COMERCIALES
+=============================================================
+=============================================================
+========================================================== */
+.acc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--dark-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9990;
+}
+
+.acc-modal {
+  width: 760px;
+  max-width: 90vw;
+  border: 1px solid #444;
+  border-radius: 4px;
+  overflow: hidden;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+/* BARRA AZUL SUPERIOR */
+.acc-modal-topbar {
+  background: #555; 
+  color: #f9fafb;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* CONTENIDO PRINCIPAL: SIDEBAR + PANEL */
+.acc-modal-inner {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  background: var(--dark-bg);
+}
+
+/* SIDEBAR IZQUIERDO */
+.acc-modal-sidebar {
+  background: var(--dark-bg-hover);
+  border-right: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+}
+
+.acc-tab-btn {
+  border: none;
+  background: transparent;
+  color: #d1d5db;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.acc-tab-btn:hover {
+  background: var(--dark-bg-hover2);
+}
+
+.acc-tab-btn--active {
+  background: #2563EB; /* aqui */
+  color: #f9fafb;
+}
+
+.acc-tab-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.acc-tab-text {
+  flex: 1;
+}
+
+.acc-sidebar-footer {
+  margin-top: auto;
+  padding: 10px 14px;
+  border-top: 1px solid #444;
+}
+
+.acc-sidebar-copy {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* PANEL DERECHO */
+.acc-modal-content {
+  padding: 14px 18px 16px 18px;
+  background: var(--dark-bg-hover);
+}
+
+.acc-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.acc-pane-title {
+  font-size: 14px;
+  margin: 0 0 12px 0;
+  color: #e5e7eb;
+}
+
+/* GRID FORMULARIO */
+.acc-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acc-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.acc-form-row--two {
+  flex-direction: row;
+  gap: 12px;
+}
+
+.acc-form-row--two > * {
+  flex: 1;
+}
+
+.acc-form-row--password {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.acc-form-left {
+  flex: 1;
+}
+
+.acc-form-row--smalltext {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.acc-label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.acc-mt {
+  margin-top: 5px !important;
+}
+
+.acc-mt2 {
+  margin-top: 8px !important;
+}
+
+.acc-input,
+.acc-static-field {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 2px;
+  border: 1px solid #444;
+  background: #444;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+.acc-input:focus {
+  outline: none;
+  border-color: var(--c-buy);
+}
+
+.acc-static-field {
+  background: var(--dark-bg-hover);
+}
+
+.acc-static-field--link {
+  color: var(--c-buy);
+}
+
+/* INPUT MULTI (DEPÓSITO) */
+.acc-input-group {
+  flex: 1;
+}
+
+.acc-form-row--deposit .acc-input-group:first-child {
+  flex: 0.7;
+}
+
+.acc-input-multi {
+  display: flex;
+  align-items: stretch;
+}
+
+.acc-input-multi .acc-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.acc-input-addon {
+  padding: 6px 10px;
+  background: #444;
+  border: 1px solid #444;
+  border-left: none;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+/* CHECKBOXES */
+.acc-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #d1d5db;
+  cursor: pointer;
+}
+
+.acc-checkbox input {
+  width: 14px;
+  height: 14px;
+}
+
+/* LINKS / TEXTO AYUDA */
+.acc-help-text {
+  font-size: 11px;
+}
+
+.acc-link {
+  color: var(--c-buy);
+  text-decoration: none;
+}
+
+.acc-link:hover {
+  text-decoration: underline;
+}
+
+/* FOOTER BOTONES */
+.acc-pane-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.acc-pane-footer--right {
+  justify-content: flex-end;
+}
+
+/* BOTONES */
+.acc-btn {
+  padding: 6px 16px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.acc-btn--primary {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #f9fafb;
+}
+
+.acc-btn--primary:hover {
+  background: var(--c-buy);
+  border-color: var(--c-buy);
+}
+
+.acc-btn--danger {
+  background: transparent;
+  border-color: #b91c1c;
+  color: #fca5a5;
+}
+
+.acc-btn--danger:hover {
+  background: #7f1d1d;
+}
+
+/* TAB CUENTA (RESUMEN) */
+.acc-account-summary {
+  margin-top: 4px;
+  padding: 8px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acc-account-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.acc-account-label {
+  color: #e5e7eb;
+}
+
+.acc-account-balance {
+  color: #e5e7eb;
+}
+
+.acc-account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  font-size: 12px;
+}
+
+.acc-account-small-label {
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.acc-account-value {
+  color: #e5e7eb;
+}
+
+
+
+
+
+
+
+/* --- LISTA DE CUENTAS EN EL SIDEBAR (DEBAJO DE "Cuenta") --- */
+.acc-sidebar-accounts {
+  margin-top: 4px;
+  border-top: 1px solid #444;
+  padding: 4px 0 8px 0;
+}
+
+.acc-sidebar-account-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 6px 14px 6px 34px; /* alineado con los tabs con icono */
+  text-align: left;
+  cursor: pointer;
+  color: #e5e7eb;
+  font-size: 12px;
+}
+
+.acc-sidebar-account-item:hover {
+  background: var(--dark-bg-hover2);
+}
+
+.acc-sidebar-account-item--active {
+  background: #444; /* aqui */
+}
+
+.acc-sidebar-account-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.acc-sidebar-account-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: #2563EB; 
+}
+
+.acc-sidebar-account-name {
+  font-size: 13px;
+}
+
+.acc-sidebar-account-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.acc-sidebar-account-login {
+  /* login a la izquierda */
+}
+
+.acc-sidebar-account-balance {
+  /* balance a la derecha */
+}
+
+/* --- CABECERA DEL DETALLE DERECHA --- */
+.acc-account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.acc-account-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.acc-account-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.acc-account-header-balance {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.traderoom-blocked {
+  pointer-events: none;
+  opacity: 0.25;
+  filter: blur(1px);
+}
+
+/* =========================
+   LEFT MENU (tabs)
+   ========================= */
+
+/* Hover SOLO en tabs NO activos */
+.acc-tab-btn:not(.acc-tab-btn--active):hover {
+  /* aquí va tu estilo hover actual */
+  background: rgba(255,255,255,0.06);
+}
+
+/* Si por tu CSS actual se “come” el activo, lo blindamos */
+.acc-tab-btn.acc-tab-btn--active:hover {
+  /* mantenlo igual que el activo */
+  background: #2f6feb;      /* o el color exacto que uses para activo */
+  cursor: default;
+}
+
+
+/* =========================
+   SUB-ACCOUNTS list (sidebar)
+   ========================= */
+
+/* Hover SOLO en items NO activos */
+.acc-sidebar-account-item:not(.acc-sidebar-account-item--active):hover {
+  /* aquí va tu hover actual */
+  background: rgba(255,255,255,0.06);
+}
+
+/* Blindaje: el activo no cambia con hover */
+.acc-sidebar-account-item.acc-sidebar-account-item--active:hover {
+  background: #444;      /* o el color exacto del activo */
+  cursor: default;
+}
+
+
+
+
+
+
+/* =====================================================
+   PANEL DEV – PRUEBA SUPABASE AUTH
+===================================================== */
+
+.auth-test-panel {
+  position: fixed;
+  left: 60px;                /* a la derecha de la barra lateral */
+  bottom: 16px;
+  width: 260px;
+  background: #020617;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #e5e7eb;
+  z-index: 9999;
+}
+
+.auth-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+}
+
+.auth-status {
+  font-size: 11px;
+  color: #4ade80;
+}
+
+.auth-status--off {
+  color: #facc15;
+}
+
+.auth-test-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-switch {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #1f2937;
+}
+
+.auth-switch button {
+  flex: 1;
+  padding: 3px 6px;
+  background: #020617;
+  border: none;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.auth-switch button.active {
+  background: #1d4ed8;
+  color: #f9fafb;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 12px;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.auth-main-btn {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: none;
+  background: #16a34a;
+  color: #f9fafb;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.auth-main-btn:hover {
+  background: #15803d;
+}
+
+.auth-main-btn--danger {
+  background: #b91c1c;
+}
+
+.auth-main-btn--danger:hover {
+  background: #7f1d1d;
+}
+
+.auth-error {
+  color: #f97373;
+  font-size: 11px;
+}

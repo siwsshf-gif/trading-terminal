@@ -1,0 +1,610 @@
+TABLE master_accounts ================================================================================================
+                                                                                    // Defaults
+id                  uuid            // PK
+user_id             uuid            // FK → auth.users.id
+account_number      text            // número único master (visible al usuario)
+status              text            // active / disabled / pending / blocked        = 'active'
+currency            text            // USD, MXN, EUR...                             = 'usd'
+balance             numeric         // Saldo actual central                         = 0
+total_deposit       numeric         // Depositos históricos                         = 0
+total_withdrawal    numeric         // Retiros históricos                           = 0
+created_at          timestamptz     // fecha creación                               = now()
+updated_at          timestamptz     // última actualización                         = now()
+
+
+
+TABLE sub_accounts ======================================================================================================
+
+id                      uuid             // PK
+user_id                 uuid             // FK → auth.users.id
+master_account_number   text             // FK lógica → master_accounts.account_number
+account_number          text             // número único por subcuenta
+status                  text             // active / disabled / pending / blocked             = 'active'
+currency                text             // USD, MXN, EUR...                                  = 'usd'
+
+type_product_account    text             // cfds / exchange (binarias se agrega después)      = 'cfds'
+type_account            text             // real / demo
+name_type_account       text             // nombre comercial: BP Real-C 1, etc.
+level_type_account      text             // standard / vip / business                         = 'standard'
+
+created_at              timestamptz      // fecha creación                                    = now()
+updated_at              timestamptz      // última actualización                              = now()
+
+leverage                smallint         // 10, 20, 50, 100, 200, 400, 500, 1000              = 400
+margin_call_level       numeric          // 50 por ejemplo
+stop_out_level          numeric          // 20 por ejemplo
+swap_enabled            boolean          // true/false
+commission_enabled      boolean          // true/false
+
+balance                 numeric          // balance actual                                    = 0
+equity                  numeric          // equity actual                                     = 0
+margin                  numeric          // margen usado                                      = 0
+free_margin             numeric          // margen libre                                      = 0
+level                   numeric          // nivel = equity / margin * 100                     = 0
+
+credit                  numeric          // bonos                                             = 0
+profit                  numeric          // P/L flotante                                      = 0
+deposit                 numeric          // histórico                                         = 0
+withdrawal              numeric          // histórico                                         = 0
+
+pending_deposit         numeric          // depósitos en proceso                              = 0
+pending_withdrawal      numeric          // retiros en proceso                                = 0
+
+total_profit            numeric          // ganancia total de CFDs (solo closes)              = 0
+total_balance           numeric          // balance histórico acumulado                       = 0
+
+
+
+TABLE instruments ======================================================================================================
+
+// Instrumentos disponibles en el broker (CFDs, FX, índices, commodities, crypto, etc.)
+// Controla datos de mercado, configuración de trading, comisiones, swaps, horarios, etc.
+// Cada registro es un símbolo único.
+
+id                   uuid                // PK — identificador único del instrumento
+symbol               text                // Símbolo corto: EURUSD, XAUUSD, BTCUSD (visible al trader)
+symbol_tradingview   text                // Símbolo usado para TradingView: OANDA:EURUSD, BINANCE:BTCUSDT
+description          text                // Nombre completo: "Euro vs US Dollar", "Gold Spot"
+asset_type           text                // forex / crypto / index / stock / commodity
+group_name           text                // Grupo visible: Forex Majors, Metals, Crypto, US Indices, etc.
+fx_base              text                // Para FX: moneda base (ej: EUR en EURUSD)
+fx_quote             text                // Para FX: moneda cotizada (ej: USD en EURUSD)
+
+digits               int8                // Cantidad de decimales del precio (5=EURUSD, 3=XAUUSD, 2=US30)
+
+spread_min           numeric             // Spread mínimo permitido
+spread_max           numeric             // Spread máximo permitido
+
+contract_size        numeric             // Tamaño del contrato: FX=100,000, XAU=100, Indices varía
+tick_size            numeric             // Movimiento mínimo del precio (ej: 0.00001)
+tick_value           numeric             // Valor monetario por tick (calculado por tu feed o manual)
+
+min_lot_size         numeric             // Lote mínimo permitido (ej: 0.01)
+max_lot_size         numeric             // Lote máximo permitido (ej: 100)
+lot_step             numeric             // Incremento permitido entre lotes (ej: 0.01)
+
+leverage             numeric             // Apalancamiento propio del instrumento (1:100, 1:500 → 500)
+
+margin_requirement   numeric             // Requisito de margen fijo (si no usas leverage dinámico)
+margin_currency      text                // Moneda del margen (ej: USD)
+
+commission_type      text                // Tipo de comisión (por lote, por valor, por trade)
+commission_min       numeric             // Comisión mínima
+commission_max       numeric             // Comisión máxima
+commission_value     numeric             // Monto de comisión
+session_template     text                // "forex_24x5" , "crypto_24x7" , "indices_eu" , "indices_us" , "stocks_us" , "stocks_eu"
+
+swap_type            text                // Tipo: points / percentage / currency
+swap_long            numeric             // Swap para operaciones BUY
+swap_short           numeric             // Swap para operaciones SELL
+triple_swap_day      text                // Día de triple swap: "wednesday", etc.
+
+rollover_cost        numeric             // Costo por rollover (si no usas swap)
+rollover_enabled     boolean             // Habilitar / deshabilitar cobro de swaps/rollover                     = true
+
+is_trading_enabled   boolean             // Si se puede operar (ej: BTC deshabilitado fines de semana)           = true
+market_open          timestamptz         // Hora de apertura
+market_close         timestamptz         // Hora de cierre
+timezone             text                // Zona del mercado (UTC, EST, GMT)
+is_market_open       boolean             // Campo dinámico para saber si está abierto
+
+color                text                // Color para UI (ej: azul para forex, dorado para oro)
+display_order        int2                // Orden en el Market Watch                                             = 0
+is_visible           boolean             // Para ocultar símbolos del lado frontend                              = true
+
+data_source          text                // Fuente de datos: twelvedata, polygon, binance, custom
+feed_symbol          text                // Símbolo real del proveedor de datos
+
+created_at           timestamptz         // Fecha creación                                                       = now()
+updated_at           timestamptz         // Fecha actualización                                                  = now()
+
+
+
+TABLE instrument_quotes ======================================================================================================
+
+instrument_id     uuid         // FK — ID del instrumento en instruments
+bid                numeric      // Precio de compra (broker compra al trader)
+ask                numeric      // Precio de venta (broker vende al trader)
+last               numeric      // Último precio transado / mid / referencia
+change             numeric      // Cambio porcentual o absoluto vs precio previo
+spread             numeric      // ask - bid (spread actual en vivo)
+updated_at         timestamptz  // Última actualización del feed en milisegundos
+
+
+
+TABLE orders ==================================================================================================================
+
+id                 uuid            // ID único de la orden
+user_id            uuid            // Usuario que envió la orden
+account_id         uuid            // Cuenta desde donde se envió
+instrument_id      uuid            // Instrumento (FK a instruments)
+client_order_id    text            // ID generado por el frontend
+side               text            // buy / sell
+execution          text            // market / limit / stop / stop_limit
+time_in_force      text            // GTC / IOC / FOK / GTD
+gtd_time           timestamptz     // Fecha de expiración si TIF = GTD
+
+quantity_lots      numeric         // Tamaño de la orden en lotes
+price              numeric         // Precio límite (limit / stop_limit)
+stop_price         numeric         // Precio stop (stop / stop_limit)
+take_profit        numeric         // TP inicial si aplica
+stop_loss          numeric         // SL inicial si aplica
+trailing_stop      numeric         // Distancia del trailing stop
+
+reduce_only        boolean         // Solo reduce posición existente
+hedge              boolean         // Permite abrir en hedge (no netting)
+
+status             text            // pending / accepted / filled / cancelled / expired
+filled_lots        numeric         // Cantidad ejecutada
+avg_fill_price     numeric         // Precio promedio de ejecución
+margin_reserved    numeric         // Margen retenido al crear la orden
+reason             text            // Motivo de rechazo o cancelación
+
+placed_at          timestamptz     // Momento en que el usuario envió la orden
+accepted_at        timestamptz     // Momento en que el engine aceptó la orden
+filled_at          timestamptz     // Momento en que se completó
+cancelled_at       timestamptz     // Momento de cancelación
+expired_at         timestamptz     // Momento de expiración
+created_at         timestamptz     // Creado (trigger automático)
+updated_at         timestamptz     // Actualizado (trigger automático)
+
+comment            text            // Comentario opcional del usuario
+provider_order_id  text            // ID con LP o proveedor (si aplica)
+extra              jsonb           // Metadata adicional
+
+
+
+TABLE positions ==============================================================================================================
+
+id                  uuid            NOT NULL        -- ID único de la posición
+
+user_id             uuid            NOT NULL        -- Usuario dueño de la posición
+account_id          uuid            NOT NULL        -- Cuenta (real/demo) donde está la posición
+instrument_id       uuid            NOT NULL        -- Instrumento operado (EURUSD, XAUUSD, BTCUSD, etc.)
+entry_order_id      uuid            NULL            -- Orden que abrió esta posición (para auditoría)
+
+side                text            NULL            -- buy / sell
+
+quantity_lots       numeric         NULL            -- Tamaño de la posición en lotes
+avg_entry_price     numeric         NULL            -- Precio exacto de entrada
+
+take_profit         numeric         NULL            -- Nivel de salida automática TP
+stop_loss           numeric         NULL            -- Nivel de salida automática SL
+trailing_stop       numeric         NULL            -- Distancia del trailing stop (si está activo)
+
+leverage            smallint        NULL            -- Apalancamiento aplicado a esta posición
+margin_used         numeric         NULL            -- Margen requerido para mantener la posición
+notional_value      numeric         NULL            -- Valor nocional = precio * lots * contract size
+
+swap_accrued        numeric         NULL            -- Intereses (swap) acumulados
+commission_accrued  numeric         NULL            -- Comisiones acumuladas en esta posición
+
+pnl_floating        numeric         NULL            -- Ganancia/pérdida actual (no cerrada)
+pnl_closed          numeric         NULL            -- Ganancia/pérdida obtenida al cerrar
+
+status              text            NULL            -- open / closed / liquidated
+opened_at           timestamptz     NULL            -- Fecha y hora de apertura
+closed_at           timestamptz     NULL            -- Fecha y hora de cierre
+
+close_price         numeric         NULL            -- Precio de salida (si ya está cerrada)
+close_order_id      uuid            NULL            -- ID de la orden usada para cerrar
+
+reason              text            NULL            -- tp / sl / manual / liquidation
+comment             text            NULL            -- Nota interna o comentario
+
+extra               jsonb           NULL            -- Datos adicionales personalizados (flexible)
+
+created_at          timestamptz     NOT NULL        -- Timestamp de creación del registro
+updated_at          timestamptz     NOT NULL        -- Última actualización del registro
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===================================================================================================================
+====================================================== SQL ========================================================
+===================================================================================================================
+
+-- ============================================================
+-- TABLE: master_accounts
+-- ============================================================
+
+CREATE TABLE public.master_accounts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+
+    account_number text UNIQUE NOT NULL,     -- número master único
+    status text NOT NULL DEFAULT 'active',   -- active, disabled, pending, blocked
+    currency text NOT NULL DEFAULT 'USD',    -- USD, MXN, EUR, etc.
+
+    balance numeric DEFAULT 0,               -- saldo central
+    total_deposit numeric DEFAULT 0,
+    total_withdrawal numeric DEFAULT 0,
+
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- TABLE: sub_accounts  (antes accounts)
+-- ============================================================
+
+CREATE TABLE public.sub_accounts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+
+    master_account_number text NOT NULL REFERENCES public.master_accounts (account_number) ON DELETE CASCADE,
+
+    account_number text UNIQUE NOT NULL,         -- número único subcuenta
+    status text NOT NULL DEFAULT 'active',       -- active, disabled, pending, blocked
+    currency text NOT NULL DEFAULT 'USD',        -- moneda base de la subcuenta
+
+    type_product_account text NOT NULL,          -- cfds, exchange (binarias las quitamos)
+    type_account text NOT NULL,                  -- real, demo
+    name_type_account text,                      -- "BP Real-C 1" / "BP Demo-C 1"
+    level_type_account text DEFAULT 'standard',  -- standard, vip, business
+
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+
+    leverage int2 DEFAULT 100,                   -- 10,20,50,100,200,500,1000
+    margin_call_level numeric DEFAULT 50,        -- %
+    stop_out_level numeric DEFAULT 20,           -- %
+    swap_enabled boolean DEFAULT true,
+    commission_enabled boolean DEFAULT false,
+
+    balance numeric DEFAULT 0,
+    equity numeric DEFAULT 0,
+    margin numeric DEFAULT 0,
+    free_margin numeric DEFAULT 0,
+    level numeric DEFAULT 0,
+
+    credit numeric DEFAULT 0,
+    profit numeric DEFAULT 0,                    -- flotante actual (posiciones abiertas)
+    deposit numeric DEFAULT 0,                   -- histórico
+    withdrawal numeric DEFAULT 0,                -- histórico
+
+    pending_deposit numeric DEFAULT 0,
+    pending_withdrawal numeric DEFAULT 0,
+
+    total_profit numeric DEFAULT 0,              -- histórico CFDs
+    total_balance numeric DEFAULT 0              -- histórico balance inicial + ajustes
+);
+
+
+
+
+
+
+
+
+
+
+
+
+-- ============================================================
+-- 1 TRIGGERS: GENERICO
+-- ============================================================
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS trigger AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================
+-- 2 TRIGGERS: master_accounts
+-- ============================================================
+CREATE TRIGGER trg_master_accounts_updated
+BEFORE UPDATE ON public.master_accounts
+FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- ============================================================
+-- 3 TRIGGERS: sub_accounts
+-- ============================================================
+CREATE TRIGGER trg_sub_accounts_updated
+BEFORE UPDATE ON public.sub_accounts
+FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- ============================================================
+-- 4 TRIGGERS: CONECTAR SIGNUP SUPABASE
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.handle_new_user_create_accounts()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Cuando se crea un usuario nuevo en auth.users,
+    -- creamos su master y sus subcuentas por defecto.
+    PERFORM public.create_default_accounts_for_user(NEW.id);
+    RETURN NEW;
+END;
+$$;
+
+-- ============================================================
+-- 5 TRIGGERS
+-- ============================================================
+CREATE TRIGGER trg_auth_users_create_accounts
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user_create_accounts();
+
+
+
+
+
+
+
+
+
+
+-- ============================================================
+-- 1 INDICES PARA VELOCIDAD - Búsquedas rápidas por usuario
+-- ============================================================
+CREATE INDEX idx_master_accounts_user_id ON public.master_accounts (user_id);
+CREATE INDEX idx_sub_accounts_user_id ON public.sub_accounts (user_id);
+
+-- ============================================================
+-- 2 INDICES PARA VELOCIDAD - Búsquedas rápidas por master_account_number
+-- ============================================================
+CREATE INDEX idx_sub_accounts_master_number ON public.sub_accounts (master_account_number);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ============================================================
+-- 1 FUNCTIONS - generar número de cuenta único de 10 dígitos
+-- ============================================================
+-- Función que genera un número de cuenta de 10 dígitos,
+-- y valida que NO exista ni en master_accounts ni en sub_accounts.
+CREATE OR REPLACE FUNCTION public.generate_unique_account_number()
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_acc    text;
+    v_exists boolean;
+BEGIN
+    LOOP
+        -- Número aleatorio entre 0 y 9,999,999,999 y lo rellenamos a 10 dígitos
+        v_acc := lpad( (floor(random() * 10000000000))::bigint::text, 10, '0');
+
+        -- Verificar si ya existe en master_accounts o sub_accounts
+        SELECT EXISTS (
+            SELECT 1 FROM public.master_accounts m WHERE m.account_number = v_acc
+            UNION ALL
+            SELECT 1 FROM public.sub_accounts s WHERE s.account_number = v_acc
+        )
+        INTO v_exists;
+
+        -- Si NO existe, lo regresamos
+        IF NOT v_exists THEN
+            RETURN v_acc;
+        END IF;
+
+        -- Si existe, vuelve a intentar (loop)
+    END LOOP;
+END;
+$$;
+
+-- ============================================================
+-- 2 FUNCTIONS - crear master + subcuenta REAL + subcuenta DEMO para un usuario
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.create_default_accounts_for_user(p_user_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_master_number text;
+    v_real_number   text;
+    v_demo_number   text;
+BEGIN
+    -- 1) Crear número de cuenta master único
+    v_master_number := public.generate_unique_account_number();
+
+    -- 2) Insertar master_account
+    INSERT INTO public.master_accounts (
+        user_id,
+        account_number,
+        status,
+        currency,
+        balance,
+        total_deposit,
+        total_withdrawal
+    )
+    VALUES (
+        p_user_id,
+        v_master_number,
+        'active',          -- estado inicial
+        'USD',             -- divisa por defecto master
+        0,
+        0,
+        0
+    );
+
+    -- 3) Crear subcuenta REAL (CFDs)
+    v_real_number := public.generate_unique_account_number();
+
+    INSERT INTO public.sub_accounts (
+        user_id,
+        master_account_number,
+        account_number,
+        status,
+        currency,
+        type_product_account,
+        type_account,
+        name_type_account,
+        level_type_account,
+        leverage,
+        margin_call_level,
+        stop_out_level,
+        swap_enabled,
+        commission_enabled,
+        balance,
+        equity,
+        margin,
+        free_margin,
+        level,
+        credit,
+        profit,
+        deposit,
+        withdrawal,
+        pending_deposit,
+        pending_withdrawal,
+        total_profit,
+        total_balance
+    )
+    VALUES (
+        p_user_id,
+        v_master_number,
+        v_real_number,
+        'active',
+        'USD',           -- la puedes cambiar a lo que quieras por defecto
+        'cfds',
+        'real',
+        'Real-C7',
+        'standard',
+        400,             -- leverage por defecto
+        50,              -- margin call %
+        20,              -- stop out %
+        TRUE,            -- swap_enabled
+        TRUE,            -- commission_enabled
+        0,0,0,0,0,
+        0,0,0,0,0,0,0,0
+    );
+
+    -- 4) Crear subcuenta DEMO (CFDs)
+    v_demo_number := public.generate_unique_account_number();
+
+    INSERT INTO public.sub_accounts (
+        user_id,
+        master_account_number,
+        account_number,
+        status,
+        currency,
+        type_product_account,
+        type_account,
+        name_type_account,
+        level_type_account,
+        leverage,
+        margin_call_level,
+        stop_out_level,
+        swap_enabled,
+        commission_enabled,
+        balance,
+        equity,
+        margin,
+        free_margin,
+        level,
+        credit,
+        profit,
+        deposit,
+        withdrawal,
+        pending_deposit,
+        pending_withdrawal,
+        total_profit,
+        total_balance
+    )
+    VALUES (
+        p_user_id,
+        v_master_number,
+        v_demo_number,
+        'active',
+        'USD',
+        'cfds',
+        'demo',
+        'Demo-C7',
+        'standard',
+        400,
+        50,
+        20,
+        TRUE,
+        TRUE,
+        0,0,0,0,0,
+        0,0,0,0,0,0,0,0
+    );
+END;
+$$;
+
+
+
+
+
+
+================== PRIME XM ==================
+EQUINIX
+TAKER API PROTOCOL
+
+HISTORICO DE DATOS PRECIOS (OK)
+BLOOMBERG
+
+
+1 - LINK KYC
+2 - CONTRATO (FIRMAS)
+3 - 4,000 USD INICIALES DE GARANTIA (60 DIAS)
+4 - BRIDGE 2,000 USD MENSUAL
+    CONEXION A LOS APIS QUE QUERAMOS
+    CONEXION A 3 PROVEEDORES DE LIQUIDEZ
+    - INTEGRACION DE LA PLATAFORMA
+3 - SERVIDOR = BRIDGE + PLATAFORMA (HOSTING)
+
+PAGO FIJO 2,000 USD
+COBRAN 1 USD POR CADA 10 lotes (FX)
+
+
+RECOMENDACION: NOSOTROS HSCER LA MESA DE DEALING (RISK ENGINE)
+
