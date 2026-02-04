@@ -2661,6 +2661,9 @@ MODAL CUENTAS COMERCIALES
 }
 
 .acc-btn--primary {
+  height: 30px;
+  min-height: 30px;
+  max-height: 30px;
   background: #2563EB;
   border-color: #2563EB;
   color: #f9fafb;
@@ -3465,7 +3468,7 @@ MODAL CUENTAS COMERCIALES
   }
 
   .acc-pane-footer--right{
-    align-items: stretch;
+    align-items: center;
   }
 
   .acc-btn{

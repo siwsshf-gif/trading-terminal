@@ -9,15 +9,17 @@
 
     <div v-if="showAccountsModal"
       class="accounts-modal-mask"
-      @mousedown.self="onAccountsBackdropClick">
-      <div class="accounts-modal-card" role="dialog" aria-modal="true">
-        <button class="accounts-modal-close" @click="closeAccountsModal">×</button>
+      @mousedown.self="onAccountsBackdropClick"
+      @click.self="onAccountsBackdropClick">
 
+      <div class="accounts-modal-card" role="dialog" aria-modal="true" @mousedown.stop @click.stop>
+        <button class="accounts-modal-close" @click="onAccountsBackdropClick">×</button>
 
         <!-- MODAL CUENTAS COMERCIALES -->
         <div class="acc-modal-overlay"
           v-if="showAccountsModal"
-          @click.self="closeAccountsModal">
+          @mousedown.self="onAccountsBackdropClick"
+          @click.self="onAccountsBackdropClick">
           <div class="acc-modal">
             <!-- BARRA AZUL SUPERIOR -->
             <div class="acc-modal-topbar">
@@ -1994,12 +1996,15 @@ export default {
       return this.positionDateFallback[key]
     },
 
-    syncTradingFormPrice(symbol: string) {
-      const row = this.watchlistRows.find(r => r.symbol === symbol);
-      if (!row) return;
+    syncTradingFormPrice(symbol: string): void {
+      if (!symbol) return;
 
-      this.activeBid = row.bid;
-      this.activeAsk = row.ask;
+      // si quieres, fuerza el símbolo activo para que activeTick cambie
+      this.activeInstrumentSymbol = symbol;
+
+      // opcional: si todavía no tienes instrument_id por alguna razón,
+      // intenta setActiveInstrumentBySymbol (que ya setea id/tvSymbol)
+      // (this as any).setActiveInstrumentBySymbol(symbol);
     },
 
 
@@ -2023,12 +2028,16 @@ export default {
     /* ==================================================================
     Backdrop click (no cierra si no hay sesión)
     ================================================================== */
-    onAccountsBackdropClick(): void {
-      // si NO hay sesión, el modal es forzoso -> no se cierra
-      if (!this.currentUser) return;
+    onAccountsBackdropClick() {
+      // 👇 SI NO hay sesión → NO cerrar
+      if (!this.currentUser) {
+        return;
+      }
 
-      this.showAccountsModal = false;
+      // 👇 SI hay sesión → cerrar normal
+      this.closeAccountsModal();
     },
+
 
 
     /* ==================================================================
@@ -2055,10 +2064,7 @@ export default {
         console.log('Usuario logueado:', this.currentUser.email)
 
         await this.loadSubAccounts()            // CARGA SUBCUENTAS
-        await this.loadDefaultTradingContext()
-        await this.loadOpenPositions()          // CARGA OPEN POSITIONS
-        await this.loadPendingOrders()          // CARGA PENDING POSITIONS
-        await this.loadHistory()                // CARGA HISTORY
+        await this.loadDefaultTradingContext()           // CARGA HISTORY
 
       } else {
         console.log('No hay sesión activa')
@@ -2157,32 +2163,26 @@ export default {
     async handleSelectSubAccount(acc: any): Promise<void> {
       if (!acc || !acc.id) return;
 
-      // 1️⃣ Marcar subcuenta seleccionada (estado inmediato)
+      // 1) cuenta activa
       this.activeAccountId = acc.id;
       this.activeSubAccount = acc;
 
-      // 2️⃣ Cerrar el modal PRIMERO (clave para evitar freeze)
+      // 2) cierra modal primero
       this.showAccountsModal = false;
-
-      // 3️⃣ Esperar a que el modal desaparezca del DOM
       await this.$nextTick();
 
       try {
-        // 4️⃣ Activar sesión lógica de trading
-        this.currentUser = acc;
-
         this.tradingLoading = true;
 
-        // 5️⃣ Cargar datos dependientes de la cuenta
         await Promise.all([
           this.loadOpenPositions(),
-          this.loadPendingOrders?.(),
+          this.loadPendingOrders(),
           this.loadHistory(),
           this.loadHistorySummary(),
         ]);
 
-        // 6️⃣ Inicializar TradingView SOLO aquí
-        this.initTradingViewWidget();
+        // 3) chart (sin resetear loaders)
+        this.initTradingViewWidget(this.activeInstrumentTvSymbol || undefined);
 
       } catch (err) {
         console.error('Error al cambiar de subcuenta:', err);
@@ -3111,35 +3111,25 @@ export default {
 
 
     // Precio de mercado actual para UNA posición (el que se usa para P/L)
-    getMarketPriceForPosition(pos: any): string | null {
-      if (!pos) return null;
+    getMarketPriceForPosition(pos: any): number | null {
+  if (!pos) return null;
 
-      // 1) localizar instrumento por instrument_id
-      const inst = this.instruments.find((i: any) => i.id === pos.instrument_id);
-      if (!inst || !inst.symbol) return null;
+  const inst = this.instruments.find((i: any) => i.id === pos.instrument_id);
+  const symbol = inst?.symbol || pos.symbol;
+  if (!symbol) return null;
 
-      const symbol = inst.symbol;
-      const tick = this.pricesBySymbol[symbol];
-      if (!tick || tick.bid == null || tick.ask == null) return null;
+  const tick = this.pricesBySymbol[symbol];
+  if (!tick || tick.bid == null || tick.ask == null) return null;
 
-      const bid = Number(tick.bid);
-      const ask = Number(tick.ask);
-      if (!Number.isFinite(bid) || !Number.isFinite(ask)) return null;
+  const bid = Number(tick.bid);
+  const ask = Number(tick.ask);
+  if (!Number.isFinite(bid) || !Number.isFinite(ask)) return null;
 
-      // 2) BUY -> usa ASK,  SELL -> usa BID
-      const side = (pos.side || pos.type || '').toLowerCase();
-      const rawPrice = side === 'buy' ? ask : bid;
-      if (!Number.isFinite(rawPrice) || rawPrice <= 0) return null;
+  const side = (pos.side || pos.type || '').toLowerCase();
+  const raw = side === 'buy' ? bid : ask; // BUY cierra al BID, SELL cierra al ASK
 
-      // 3) digits desde Supabase (igual que en el watchlist)
-      const digits =
-        this.digitsBySymbol && this.digitsBySymbol[symbol] != null
-          ? this.digitsBySymbol[symbol]
-          : 5;
-
-      // devolvemos string ya formateado con todos los decimales
-      return rawPrice.toFixed(digits);
-    },
+  return Number.isFinite(raw) && raw > 0 ? raw : null;
+},
 
 
     /* ==================================================================
@@ -5099,11 +5089,12 @@ export default {
     /* ==================================================================
     SUPABASE - LOGIN
     ================================================================== */
-    async signIn(): Promise<void> {
-      this.authError = null;
-      this.authLoading = true;
-
+    async signIn() {
       try {
+        this.authError = null;
+        this.authLoading = true;
+
+        // 1️⃣ login supabase
         const { data, error } = await supabase.auth.signInWithPassword({
           email: this.authEmail,
           password: this.authPassword,
@@ -5111,55 +5102,37 @@ export default {
 
         if (error) throw error;
 
-        console.log('SignIn OK:', data);
         this.currentUser = data.user;
 
-        // 🔥 Cerrar modal y pasar al tab de cuentas
-        this.showAccountsModal = false;
-        this.accountsTab = 'account';
-
-        // 1️⃣ CARGA SUBCUENTAS
+        // 2️⃣ cargar subcuentas + contexto
         await this.loadSubAccounts();
-
-        // 2️⃣ “Seleccionar subcuenta por defecto” SIN inventar funciones:
-        //    - garantiza que haya activeAccountId / selectedSubAccountId coherentes
-        if (this.subAccounts && this.subAccounts.length > 0) {
-          // Si por algo no quedó set, forzamos primera
-          if (!this.activeAccountId) {
-            this.activeAccountId = this.subAccounts[0].id;
-          }
-          // Selección del modal apunta a la activa
-          this.selectedSubAccountId = this.activeAccountId;
-        }
-
-        // 3️⃣ Cargar contexto por defecto (cuenta + instrumento)
-        //    (esto también puede setear activeAccountId)
         await this.loadDefaultTradingContext();
 
-        // 4️⃣ CLAVE: esperar a que Vue aplique el estado antes de cargar tablas
-        await this.$nextTick();
+        // ✅ CLAVE: fijar selectedSubAccountId para que tu watcher de activeSubAccount dispare 100% seguro
+        this.selectedSubAccountId = this.activeAccountId;
 
-        // 🧱 Guard mínimo: si no hay cuenta activa, no intentes cargar
-        if (!this.activeAccountId) {
-          throw new Error('No se encontró una subcuenta activa para cargar datos.');
+        // ✅ CLAVE: arrancar precios en el primer login (esto antes solo pasaba en mounted con sesión)
+        await this.loadInstruments();
+        await this.loadWatchlistSymbols();     // <-- esto llama initPriceEngine() por dentro
+        await this.preloadQuotesFromSupabase();
+
+        // ✅ CLAVE: asegurar que el "jitter" corre aunque entres por login y no por reload
+        if (!this.priceAnimationIntervalId) {
+          this.priceAnimationIntervalId = window.setInterval(() => {
+            this.animatePricesStep();
+          }, 1000);
         }
 
-        // 5️⃣ CARGAS DEPENDIENTES DE activeAccountId
-        await this.loadOpenPositions();
-        await this.loadPendingOrders();
-        await this.loadHistory();
-        await this.loadHistorySummary();
-
-        // (Opcional) limpiar password ya logueado
-        // this.authPassword = '';
+        // 4️⃣ cerrar modal
+        this.showAccountsModal = false;
 
       } catch (err: any) {
-        console.error('Error signIn:', err);
-        this.authError = err.message || 'Error iniciando sesión';
+        this.authError = err.message || 'Login failed';
       } finally {
         this.authLoading = false;
       }
     },
+
 
 
     /* ==================================================================
@@ -5184,6 +5157,9 @@ export default {
 
         // 🔑 limpiar credenciales
         this.authPassword = '';
+
+        // 🔒 FORZAR LOGIN MODAL
+        this.showAccountsModal = true;
 
       } catch (err: any) {
         console.error('Error signOut:', err);
@@ -5594,20 +5570,34 @@ export default {
   watch: {
 
     activeSubAccount: {
-      immediate: true,
+    immediate: true,
       async handler(acc) {
         if (!acc?.id) return;
 
-        // 🔄 limpiar primero
+        // 🔥 limpiar estado previo (cambio de cuenta / login)
         this.openPositions = [];
         this.pendingOrders = [];
+        this.historyRows = [];
+        this.historySummary = {
+          profit: 0,
+          credit: 0,
+          deposit: 0,
+          withdrawal: 0,
+          fee: 0,
+          swap: 0,
+          net: 0,
+        };
 
-        // ⏳ esperar a que el estado reactive se aplique
+        // asegurar que Vue aplicó activeAccountId
         await this.$nextTick();
 
-        // ✅ cargar usando la cuenta activa ya seteada
-        await this.loadOpenPositions();
-        await this.loadPendingOrders();
+        // 🟢 cargar TODO desde un solo punto
+        await Promise.all([
+          this.loadOpenPositions(),
+          this.loadPendingOrders(),
+          this.loadHistory(),
+          this.loadHistorySummary(),
+        ]);
       }
     },
 
@@ -5995,17 +5985,9 @@ export default {
     } else {
 
       await this.loadSubAccounts();
-
-      /* ================================================================
-        🔁 CARGAS DEPENDIENTES DE CUENTA
-      ================================================================ */
-
       await this.loadWatchlistSymbols();
       await this.loadInstruments();
-      await this.loadOpenPositions();
-      await this.loadPendingOrders();
-      await this.loadHistory();
-      await this.loadHistorySummary();
+
     }
 
     // 👉 AHORA SÍ, la app está lista
