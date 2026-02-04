@@ -39,15 +39,6 @@
                 </button>
 
                 <button class="acc-tab-btn" v-if="!isInvestor && currentUser"
-                  :class="{ 'acc-tab-btn--active': accountsTab === 'demo' }"
-                  @click="accountsTab = 'demo'">
-                  <span class="acc-tab-icon">
-                    <i class="fa-solid fa-user-plus"></i>
-                  </span>
-                  <span class="acc-tab-text">Open demo account</span>
-                </button>
-
-                <button class="acc-tab-btn" v-if="!isInvestor && currentUser"
                   :class="{ 'acc-tab-btn--active': accountsTab === 'real' }"
                   @click="accountsTab = 'real'">
                   <span class="acc-tab-icon">
@@ -145,98 +136,6 @@
                       Login to your account
                     </button>
                     
-                  </div>
-                </div>
-
-                <!-- TAB 2: ABRIR CUENTA DEMO -->
-                <div v-if="accountsTab === 'demo'" class="acc-pane">
-                  <h3 class="acc-pane-title">Open demo account</h3>
-
-                  <div class="acc-form-grid">
-                    <div class="acc-form-row">
-                      <label class="acc-label">Platform</label>
-                      <div class="acc-static-field acc-static-field--link">
-                        Trading Terminal
-                      </div>
-                    </div>
-
-                    <div class="acc-form-row acc-form-row--two">
-                      <div>
-                        <label class="acc-label">Name</label>
-                        <input type="text" class="acc-input" placeholder="Nombre">
-                      </div>
-                      <div>
-                        <label class="acc-label">Surname</label>
-                        <input type="text" class="acc-input" placeholder="Apellido">
-                      </div>
-                    </div>
-
-                    <div class="acc-form-row">
-                      <label class="acc-label">Email</label>
-                      <input type="email" class="acc-input" placeholder="Email">
-                    </div>
-
-                    <div class="acc-form-row">
-                      <label class="acc-label">Phone</label>
-                      <input type="text" class="acc-input" placeholder="Número de teléfono">
-                    </div>
-
-                    <div class="acc-form-row">
-                      <label class="acc-checkbox">
-                        <input type="checkbox">
-                        <span>Use hedging in trading</span>
-                      </label>
-                    </div>
-
-                    <div class="acc-form-row acc-form-row--two">
-                      <div>
-                        <label class="acc-label">Account type</label>
-                        <select class="acc-input">
-                          <option>Forex Hedged USD</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="acc-form-row acc-form-row--two acc-form-row--deposit">
-                      <div class="acc-input-group">
-                        <label class="acc-label">Deposit</label>
-                        <div class="acc-input-multi">
-                          <input type="text" class="acc-input" value="100000">
-                          <span class="acc-input-addon">USD</span>
-                        </div>
-                      </div>
-                      <div class="acc-input-group">
-                        <label class="acc-label">Leverage</label>
-                        <select class="acc-input">
-                          <option>1:10</option>
-                          <option>1:20</option>
-                          <option>1:50</option>
-                          <option>1:100</option>
-                          <option>1:200</option>
-                          <option>1:400</option>
-                          <option>1:500</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="acc-form-row">
-                      <label class="acc-checkbox">
-                        <input type="checkbox">
-                        <span>
-                          I accept the terms and conditions to open an account and the data protection policy.
-                        </span>
-                      </label>
-                    </div>
-
-                    <div class="acc-form-row acc-form-row--smalltext">
-                      <a href="#" class="acc-link">Core Terminal App</a>
-                    </div>
-                  </div>
-
-                  <div class="acc-pane-footer">
-                    <button class="acc-btn acc-btn--primary">
-                      Open demo account
-                    </button>
                   </div>
                 </div>
 
@@ -422,8 +321,6 @@
               <i class="fa-solid fa-bars"></i>
             </button>
           </div>
-
-
 
           <div class="sl-group sl-group-bottom">
             <button class="sl-btn"
@@ -1526,7 +1423,7 @@
                   </div>
 
                   <!-- 🆕 LISTADO DE CUENTAS (SUBPANEL TRADING ACCOUNTS) -->
-                  <div v-if="subAccounts && subAccounts.length" class="mm-sub-accounts" @click="openAccountsModal">
+                  <div v-if="subAccounts && subAccounts.length" class="mm-sub-accounts">
 
                     <div v-for="acc in subAccounts"
                       :key="acc.id"
@@ -1535,8 +1432,7 @@
                         'mm-sub-account-item--active':
                           acc.id === (selectedSubAccountId || activeAccountId)
                       }"
-                      @click.stop="handleUiSelectSubAccount(acc);
-                                  openAccountsModal();">
+                      @click.stop="handleUiSelectSubAccount(acc);">
                       <!-- TOP -->
                       <div class="mm-sub-account-top">
                         <i class="fa-solid fa-user-group mm-sub-account-icon"></i>
@@ -1560,14 +1456,6 @@
 
                     </div>
                   </div>
-
-
-                  <div class="mm-sub-item" v-if="!isInvestor">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-right-arrow-left mm-icon"></i>
-                      <span class="mm-label">Demo account</span>
-                    </div>
-                  </div>
                 </div>
 
               </li>
@@ -1582,7 +1470,6 @@
                   <span class="mm-label">Economic Calendar</span>
                 </a>
               </li>
-
 
               <li class="mm-item mm-item-chart-settings">
                 <div class="mm-left">
@@ -1605,6 +1492,14 @@
 
                 </div>
               </li>
+
+              <li class="mm-item mm-item-chart-settings"  @click.stop="signOut">
+                <div class="mm-left">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  <span class="mm-label">Logout</span>
+                </div>
+              </li>
+
             </ul>
 
           </div>
@@ -2163,12 +2058,17 @@ export default {
     async handleSelectSubAccount(acc: any): Promise<void> {
       if (!acc || !acc.id) return;
 
-      // 1) cuenta activa
+      console.log('[ACCOUNT] Switching to sub account:', acc.id);
+
+      // 🔑 FUENTE ÚNICA DE VERDAD (AQUÍ ESTABA EL BUG)
       this.activeAccountId = acc.id;
-      this.activeSubAccount = acc;
+      this.selectedSubAccountId = acc.id;   // ✅ CLAVE
+      this.activeSubAccount = acc;           // ✅ CLAVE
 
       // 2) cierra modal primero
       this.showAccountsModal = false;
+
+      // 🔥 FORZAR reactividad antes de cargar datos
       await this.$nextTick();
 
       try {
@@ -2193,15 +2093,13 @@ export default {
 
 
 
-    handleUiSelectSubAccount(acc: any): void {
+    async handleUiSelectSubAccount(acc: any): Promise<void> {
       if (!acc || !acc.id) return;
 
-      // 🔑 cuenta activa REAL (fuente de verdad)
-      this.activeSubAccount = acc;
-
-      // 🎨 selección visual
-      this.selectedSubAccountId = acc.id;
+      // 👉 DELEGAMOS TODO a un solo método
+      await this.handleSelectSubAccount(acc);
     },
+
 
 
     /* ==================================================================
@@ -5146,32 +5044,30 @@ export default {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
 
-        // 🔐 limpiar estado de sesión
+        // 🔐 limpiar sesión
         this.currentUser = null;
         this.activeSubAccount = null;
         this.selectedSubAccountId = null;
         this.activeAccountId = null;
 
-        // 🧠 reset UI (CLAVE)
+        // permitir reiniciar price engine
+        (this as any)._priceEngineInited = false;
+
+        // 🔴 CLAVE
+        this.showMainMenu = false;
+
+        // volver a login
         this.accountsTab = 'login';
-
-        // 🔑 limpiar credenciales
         this.authPassword = '';
-
-        // 🔒 FORZAR LOGIN MODAL
         this.showAccountsModal = true;
 
       } catch (err: any) {
         console.error('Error signOut:', err);
         this.authError = err.message;
-
       } finally {
         this.authLoading = false;
       }
     },
-
-
-
 
 
     /* ==================================================================
