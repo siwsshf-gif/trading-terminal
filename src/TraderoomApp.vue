@@ -21,7 +21,7 @@
           <div class="acc-modal">
             <!-- BARRA AZUL SUPERIOR -->
             <div class="acc-modal-topbar">
-              Commercial accounts: App Web Terminal - Traderoom
+              Commercial accounts: Core Terminal App
             </div>
 
             <div class="acc-modal-inner">
@@ -72,7 +72,7 @@
 
                 <div class="acc-sidebar-footer">
                   <p class="acc-sidebar-copy">
-                    © App Web Terminal - Traderoom<br>
+                    © Core Terminal App - Traderoom<br>
                     <a href="#" class="acc-link">End User License Agreement.</a>
                   </p>
                 </div>
@@ -121,7 +121,7 @@
 
                     <div class="acc-form-row acc-mt">
                       <label class="acc-label">Server</label>
-                      <div class="acc-static-field">app.webterminal - Real</div>
+                      <div class="acc-static-field">coreterminal.app - Real</div>
                     </div>
                   </div>
 
@@ -221,7 +221,7 @@
                     </div>
 
                     <div class="acc-form-row acc-form-row--smalltext">
-                      <a href="#" class="acc-link">App Web Terminal</a>
+                      <a href="#" class="acc-link">Core Terminal App</a>
                     </div>
                   </div>
 
@@ -244,7 +244,7 @@
                     <div class="acc-form-row">
                       <label class="acc-label">Platform</label>
                       <div class="acc-static-field acc-static-field--link">
-                        Trading Terminal
+                        Core Terminal App
                       </div>
                     </div>
 
@@ -317,7 +317,7 @@
                     </div>
 
                     <div class="acc-form-row acc-form-row--smalltext">
-                      <a href="#" class="acc-link">App Web Terminal</a>
+                      <a href="#" class="acc-link">Core Terminal App</a>
                     </div>
                   </div>
 
