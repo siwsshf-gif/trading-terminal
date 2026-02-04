@@ -1,6 +1,17 @@
 {
   "routes": [
-    { "src": "^/$", "dest": "/index.html" },
-    { "src": "^/traderoom/?$", "dest": "/traderoom.html" }
+    {
+      "src": "^/traderoom\\.html$",
+      "status": 301,
+      "headers": { "Location": "/traderoom" }
+    },
+    {
+      "src": "^/$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "^/traderoom/?$",
+      "dest": "/traderoom.html"
+    }
   ]
 }
