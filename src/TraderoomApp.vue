@@ -73,7 +73,7 @@
                 <div class="acc-sidebar-footer">
                   <p class="acc-sidebar-copy">
                     © Core Terminal App - Traderoom<br>
-                    <a href="#" class="acc-link">End User License Agreement.</a>
+                    <a href="#" class="acc-link" v-if="!isInvestor">User License Agreement.</a>
                   </p>
                 </div>
               </aside>
@@ -92,7 +92,7 @@
                         v-model="authEmail"
                         type="email"
                         class="acc-input acc-mt"
-                        placeholder="Introduzca login"
+                        placeholder="Enter login"
                       />
                     </div>
 
@@ -103,7 +103,7 @@
                           v-model="authPassword"
                           type="password"
                           class="acc-input acc-mt2"
-                          placeholder="Introduzca contraseña"
+                          placeholder="Enter password"
                         />
                       </div>
                       <label class="acc-checkbox">
@@ -115,7 +115,13 @@
                     <div class="acc-form-row acc-form-row--smalltext acc-mt2">
                       <span class="acc-help-text">
                         Forgot your password?
-                        <a href="#" class="acc-link">Contact support</a>
+                        <a href="mailto:support@coreterminal.app
+                              ?subject=Web%20Terminal%20Support
+                              &body=Hello%20support,%0A%0AUser:%20%0AIssue:%20"
+                        class="acc-link">
+                        Contact support
+                      </a>
+
                       </span>
                     </div>
 
