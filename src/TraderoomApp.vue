@@ -73,7 +73,7 @@
                 <div class="acc-sidebar-footer">
                   <p class="acc-sidebar-copy">
                     © Core Terminal App - Traderoom<br>
-                    <a href="#" class="acc-link" v-if="!isInvestor">User License Agreement.</a>
+                    <!--<a href="#" class="acc-link">User License Agreement.</a>-->
                   </p>
                 </div>
               </aside>
