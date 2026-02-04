@@ -1171,6 +1171,22 @@ CHART
   border-radius: 0;
 }
 
+.chart-bottom-left {
+  text-align: center;
+  align-items: center;
+  position: absolute;
+  bottom: 42px;
+  left: 65px;
+  width: 141px;
+  background: #2E2E2E; /* rojo */
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 20; /* por encima del chart */
+  pointer-events: none; /* no bloquea clicks del chart */
+}
 
 
 /* ===========================================================
@@ -1474,7 +1490,7 @@ INPUT CENTRAL
 /* ===== ALERTS DE OPERACIONES ===== */
 .trade-alerts-wrapper {
   position: absolute;
-  left: 0;
+  right: 0;
   bottom: 0;
   padding: 12px;
   display: flex;
@@ -1548,6 +1564,7 @@ WATCHLIST
   border-radius: 0 !important;
   flex: 0 0 auto !important;
   width: 400px;
+  min-width: 420px !important;
   display: flex;
   flex-direction: column !important;
   height: 100% !important;
@@ -2833,10 +2850,6 @@ MODAL CUENTAS COMERCIALES
 }
 
 
-
-
-
-
 /* =====================================================
    PANEL DEV – PRUEBA SUPABASE AUTH
 ===================================================== */
@@ -2945,3 +2958,922 @@ MODAL CUENTAS COMERCIALES
   color: #f97373;
   font-size: 11px;
 }
+
+
+/* =====================================================
+   INVESTOR
+===================================================== */
+.trading-form--readonly {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+
+
+
+
+
+
+
+
+.mm-sub-accounts {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mm-sub-account-item {
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+}
+
+.mm-sub-account-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.mm-sub-account-item--active {
+  background: #2b6cff;
+}
+
+.mm-sub-account-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.mm-sub-account-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+
+
+
+
+
+
+
+
+
+/* =====================================================
+   MOBILE BOTTOM BAR (MT5 STYLE)
+===================================================== */
+
+.mobile-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--dark-bg);
+  border-top: 1px solid var(--border-bg);
+  display: none; /* solo móvil */
+  grid-template-columns: repeat(4, 1fr);
+  z-index: 300;
+}
+
+/* Item */
+.mbb-item {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.mbb-item i {
+  font-size: 18px;
+}
+
+/* Hover (tap feedback) */
+.mbb-item:active {
+  background: var(--dark-bg-hover2);
+}
+
+/* Activo */
+.mbb-item--active {
+  color: var(--c-buy);
+}
+
+.mbb-item--active i {
+  color: var(--c-buy);
+}
+
+/* ===========================
+   SOLO EN MOBILE
+=========================== */
+@media (max-width: 900px) {
+  .mobile-bottom-bar {
+    display: grid;
+  }
+
+  /* deja espacio para que no tape contenido */
+  .positions,
+  .chart {
+    padding-bottom: 64px;
+  }
+}
+
+
+
+
+
+
+
+
+/* ================= MOBILE LAYOUT ================= */
+@media (min-width: 900px) {
+  .hide-section-dp {
+    display: none !important;
+  }
+}
+
+
+
+
+@media (max-width: 900px) {
+
+  .mobile-section {
+    position: fixed !important;
+    inset: 0 !important; /* top:0 right:0 bottom:0 left:0 */
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 10; /* arriba del layout desktop */
+    background: #0b0b0b; /* mismo fondo que chart */
+    overflow: hidden;
+    padding-bottom: 64px !important; /* altura del bottom bar */
+  }
+
+  .mobile-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+  }
+
+  /* ================= BOTTOM BAR ================= */
+  .mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #0f0f0f;
+    border-top: 1px solid #1f2933;
+    display: flex;
+    z-index: 500 !important;
+  }
+
+  .mbb-item {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .mbb-item i {
+    font-size: 16px;
+  }
+
+  .mbb-item--active {
+    color: #3b82f6;
+  }
+
+
+  .sideleft1, .btn-hide, .positions {
+    display: none !important;
+  }
+
+
+}
+
+
+/* =====================================================
+   MAIN MENU – MOBILE FULLSCREEN (MT5 STYLE)
+===================================================== */
+@media (max-width: 900px) {
+
+  .mm-overlay--mobile {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #0f0f0f;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 64px; /* respeta bottom bar */
+  }
+
+  /* Panel ocupa todo menos el bottom bar */
+  .mm-overlay--mobile .mm-panel {
+    margin: 0;
+    width: 100%;
+    height: calc(100vh - 64px); /* 👈 respeta bottom bar */
+    border-radius: 0;
+    background: #1a1a1a;
+    overflow-y: auto;
+    box-shadow: none;
+  }
+
+  /* Header */
+  .mm-overlay--mobile .mm-header {
+    padding: 14px 16px;
+    background: #1f1f1f;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .mm-overlay--mobile .mm-name {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .mm-overlay--mobile .mm-account {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  /* Badge Real */
+  .mm-overlay--mobile .mm-badge {
+    top: 8px;
+    right: -28px;
+    font-size: 10px;
+  }
+
+  /* Lista */
+  .mm-overlay--mobile .mm-list {
+    padding: 8px 0;
+  }
+
+  .mm-overlay--mobile .mm-item {
+    padding: 14px 16px;
+    font-size: 15px;
+    border-bottom: 1px solid #262626;
+  }
+
+  .mm-overlay--mobile .mm-item:hover {
+    background: #242424;
+  }
+
+  /* Subpanels NO flotantes en mobile */
+  .mm-overlay--mobile .mm-subpanel {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    margin-top: 8px;
+    background: #181818;
+    border-radius: 6px;
+  }
+
+  .mm-overlay--mobile .mm-item-chart-settings:hover .mm-subpanel {
+    transform: none;
+  }
+
+  /* =====================================================
+     Language subpanel item (English ✓) — FIX VISUAL
+  ===================================================== */
+  .mm-overlay--mobile .mm-subpanel .mm-sub-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin: 6px 12px;
+    background: #1f1f1f;
+  }
+
+  .mm-overlay--mobile .mm-subpanel .mm-sub-item .mm-label {
+    font-size: 14px;
+    color: #e5e7eb;
+  }
+
+  .mm-overlay--mobile .mm-subpanel .mm-arrow.fa-check {
+    font-size: 14px;
+    color: #3b82f6;
+    margin-left: 12px;
+  }
+
+  /* Sub accounts */
+  .mm-overlay--mobile .mm-sub-account-item {
+    background: #202020;
+    border-radius: 6px;
+  }
+
+  .mm-overlay--mobile .mm-sub-account-item--active {
+    background: #2563eb;
+  }
+
+  .traderoom {
+    overflow: visible; /* 🔥 permite que el bottom bar se vea */
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+/* =====================================
+   ACCOUNTS MODAL — MOBILE RESPONSIVE (FIXED)
+===================================== */
+
+@media (max-width: 768px){
+
+  /* ===== MASK FULLSCREEN ===== */
+  .accounts-modal-mask{
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden !important;
+  }
+
+  /* ===== CARD FULLSCREEN ===== */
+  .accounts-modal-card{
+    width: 100%;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+  }
+
+  /* CLOSE BUTTON */
+  .accounts-modal-close{
+    top: 10px;
+    right: 10px;
+    z-index: 50;
+  }
+
+  /* ===== MODAL MAIN ===== */
+  .acc-modal{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+  }
+
+  /* ===== TOP BAR ===== */
+  .acc-modal-topbar{
+    font-size: 13px;
+    padding: 10px 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+  }
+
+  /* ===== INNER LAYOUT ===== */
+  .acc-modal-inner{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+  }
+
+  /* =====================================
+     SIDEBAR → TABS (STACKED, NO SCROLL)
+  ===================================== */
+
+  .acc-modal-sidebar{
+    width: 100%;
+    display: flex;
+    flex-direction: column; /* 🔥 CLAVE */
+    overflow: hidden !important;
+    border-right: none;
+    border-bottom: 1px solid #3a3a3a;
+    flex-shrink: 0;
+  }
+
+  .acc-tab-btn{
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    font-size: 13px;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+
+  .acc-tab-btn + .acc-tab-btn{
+    border-top: 1px solid rgba(255,255,255,.06);
+  }
+
+  .acc-tab-icon{
+    margin-right: 10px;
+  }
+
+  .acc-tab-text{
+    font-size: 13px;
+  }
+
+  /* ocultamos footer del sidebar en mobile */
+  .acc-sidebar-footer{
+    display: none !important;
+  }
+
+  /* =====================================
+     CONTENT AREA (SCROLL VERTICAL ÚNICO)
+  ===================================== */
+
+  .acc-modal-content{
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden !important;
+    padding: 16px 14px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ===== PANES ===== */
+  .acc-pane{
+    padding: 0;
+  }
+
+  .acc-pane-title{
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  /* =====================================
+     FORMS
+  ===================================== */
+
+  .acc-form-grid{
+    gap: 14px;
+  }
+
+  .acc-form-row--two{
+    grid-template-columns: 1fr;
+  }
+
+  .acc-input,
+  .acc-static-field{
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .acc-label{
+    font-size: 12px;
+  }
+
+  .acc-checkbox span{
+    font-size: 12px;
+  }
+
+  /* ===== FOOTERS ===== */
+  .acc-pane-footer{
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .acc-pane-footer--right{
+    align-items: stretch;
+  }
+
+  .acc-btn{
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  /* =====================================
+     ACCOUNT DETAIL (TAB ACCOUNT)
+  ===================================== */
+
+  .acc-account-header{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .acc-account-header-balance{
+    font-size: 16px;
+  }
+
+  .acc-account-grid{
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   MOBILE POSITIONS / HISTORY — PRO TERMINAL (FINAL)
+   (Reemplaza TODO tu CSS mobile anterior por este bloque)
+========================================================= */
+
+/* ====== POSITIONS WRAPPER ====== */
+.positions-mobile{
+  font-size: 12px;
+}
+
+.pm-list{
+  display: flex;
+  flex-direction: column;
+}
+
+/* ====== CARD LAYOUT (contenido + botón) ====== */
+.pm-card{
+  background: #0F0F0F;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr 110px; /* info | action */
+  grid-template-rows: auto 1fr;
+  column-gap: 14px;
+  row-gap: 10px;
+  border-bottom: 1px solid var(--dark-bg-hover);
+}
+
+/* Pending accent */
+.pm-card--pending{
+  border-left: 3px solid #d6b25e;
+  padding-left: 10px;
+}
+
+/* ====== HEADER ====== */
+.pm-header{
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Symbol left */
+.pm-symbol{
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: #DBDBDB;
+  letter-spacing: .2px;
+}
+
+/* Type centered */
+.pm-type{
+  font-size: 12px;
+  color: #9aa0aa;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+/* Status (Pending) right-ish */
+.pm-status{
+  font-size: 12px;
+  color: #DBDBDB;
+  white-space: nowrap;
+}
+
+/* Profit far right */
+.pm-profit{
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.pm-profit-pos{ color: #3b82f6; } /* tu azul */
+.pm-profit-neg{ color: #ef4444; }
+
+/* ====== BODY ====== */
+/* 2 columnas de campos tipo terminal */
+.pm-body{
+  grid-column: 1 / 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+  align-content: start;
+}
+
+/* Cada campo: label izquierda, value derecha (ya no se pega) */
+.pm-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pm-row span:first-child{
+  color: #7c828d;
+  white-space: nowrap;
+}
+
+.pm-row span:last-child{
+  color: #DBDBDB;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* SL / TP (mantener igual pero consistente) */
+.pm-sl-tp span:first-child{
+  color: #9aa0aa;
+}
+
+/* ====== ACTION COLUMN (botón abajo derecha) ====== */
+.pm-action{
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+/* ====== BUTTONS ====== */
+.pm-btn{
+  border: none;
+  font-size: 18px;
+}
+
+.pm-btn:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.22);
+}
+.pm-btn:active{
+  transform: translateY(1px);
+}
+.pm-btn:focus,
+.pm-btn:focus-visible{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Close */
+.pm-btn-close{
+  background: rgba(239,68,68,.10);
+  border-color: rgba(239,68,68,.38);
+  color: #ffd3d3;
+}
+.pm-btn-close:hover{
+  background: rgba(239,68,68,.14);
+  border-color: rgba(239,68,68,.55);
+}
+
+/* Cancel */
+.pm-btn-cancel{
+  background: rgba(250,204,21,.10);
+  border-color: rgba(250,204,21,.38);
+  color: #fff3c4;
+}
+.pm-btn-cancel:hover{
+  background: rgba(250,204,21,.14);
+  border-color: rgba(250,204,21,.55);
+}
+
+/* Disabled */
+.pm-btn[disabled]{
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* =========================================================
+   MOBILE HISTORY — MATCH STYLE
+========================================================= */
+.history-mobile{
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.hm-card{
+  background: #0f1218;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.hm-header{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hm-symbol{
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: #DBDBDB;
+}
+
+.hm-type{
+  font-size: 12px;
+  color: #9aa0aa;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+.hm-body{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+}
+
+.hm-row{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hm-row span:first-child{ color: #7c828d; }
+.hm-row span:last-child{
+  color: #DBDBDB;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.hm-profit{
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.hm-profit.pm-profit-pos{ color: #3b82f6; }
+.hm-profit.pm-profit-neg{ color: #ef4444; }
+
+
+
+
+
+
+
+
+
+
+
+/* =====================================
+   MOBILE ACCOUNT SUMMARY (PRO)
+===================================== */
+
+.pm-account-summary {
+  position: sticky;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+
+  background: #2E2E2E;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+  align-items: center;
+}
+
+/* =====================================
+   RESERVA ESPACIO PARA NO TAPARLO
+===================================== */
+
+/* el primer elemento después del summary */
+.pm-account-summary + .pm-card{
+  margin-top: 6px;
+}
+
+/* cuando hay muchas posiciones */
+.pm-list{
+  padding-top: 0; /* controlado por sticky */
+}
+
+/* grid info */
+.pm-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 6px;
+  column-gap: 12px;
+  font-size: 11px;
+}
+
+.pm-summary-label {
+  display: block;
+  color: #7c828d;
+  line-height: 1.2;
+}
+
+.pm-summary-value {
+  color: #e5e7eb;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+/* profit total */
+.pm-summary-profit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 70px;
+}
+
+.pm-summary-profit-value {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.pm-summary-currency {
+  font-size: 11px;
+  color: #9aa0aa;
+}
+
+/* usa tus colores existentes */
+.pm-profit-pos {
+  color: #3b82f6;
+}
+
+.pm-profit-neg {
+  color: #ef4444;
+}
+
+
+
+
+
+/* =====================================
+   MOBILE SCROLL FIX (CRÍTICO)
+===================================== */
+
+
+
+/* contenedor scrollable real */
+.positions-mobile {
+  height: calc(100vh - 64px); /* 👈 ajusta a la altura real de tu bottom nav */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* evita que cards rompan el flujo */
+.pm-list {
+  padding-bottom: 72px;
+}
+
+
+
+
+
+
+/* =========================================================
+   MOBILE HISTORY — MISMO ESTILO QUE POSITIONS
+========================================================= */
+
+/* history usa pm-card pero sin columna de acción */
+.pm-card--history{
+  grid-template-columns: 1fr; /* elimina columna de botones */
+}
+
+/* asegura que el body ocupe todo el ancho */
+.pm-card--history .pm-body{
+  grid-column: 1 / -1;
+}
+
+/* separador visual entre trades */
+.pm-card--history{
+  border-bottom: 1px solid var(--dark-bg-hover);
+}
+

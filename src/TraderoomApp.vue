@@ -21,7 +21,7 @@
           <div class="acc-modal">
             <!-- BARRA AZUL SUPERIOR -->
             <div class="acc-modal-topbar">
-              Cuentas comerciales: Web Trading Terminal - Traderoom
+              Commercial accounts: App Web Terminal - Traderoom
             </div>
 
             <div class="acc-modal-inner">
@@ -33,25 +33,25 @@
                   <span class="acc-tab-icon">
                     <i class="fa-solid fa-link"></i>
                   </span>
-                  <span class="acc-tab-text">Conectarse a la cuenta</span>
+                  <span class="acc-tab-text">Login to your account</span>
                 </button>
 
-                <button class="acc-tab-btn"
+                <button class="acc-tab-btn" v-if="!isInvestor && currentUser"
                   :class="{ 'acc-tab-btn--active': accountsTab === 'demo' }"
                   @click="accountsTab = 'demo'">
                   <span class="acc-tab-icon">
                     <i class="fa-solid fa-user-plus"></i>
                   </span>
-                  <span class="acc-tab-text">Abrir cuenta demo</span>
+                  <span class="acc-tab-text">Open demo account</span>
                 </button>
 
-                <button class="acc-tab-btn"
+                <button class="acc-tab-btn" v-if="!isInvestor && currentUser"
                   :class="{ 'acc-tab-btn--active': accountsTab === 'real' }"
                   @click="accountsTab = 'real'">
                   <span class="acc-tab-icon">
                     <i class="fa-solid fa-briefcase"></i>
                   </span>
-                  <span class="acc-tab-text">Abrir cuenta real</span>
+                  <span class="acc-tab-text">Open real account</span>
                 </button>
 
                 <button class="acc-tab-btn"
@@ -60,45 +60,20 @@
                   <span class="acc-tab-icon">
                     <i class="fa-solid fa-user"></i>
                   </span>
-                  <span class="acc-tab-text">Cuenta</span>
+                  <span class="acc-tab-text">Account</span>
                 </button>
 
-                <!-- 🆕 LISTADO DE CUENTAS EN EL NAV -->
-                <div  v-if="accountsTab === 'account' && subAccounts && subAccounts.length" class="acc-sidebar-accounts">
-                  <button v-for="acc in subAccounts"
-                    :key="acc.id"
-                    class="acc-sidebar-account-item"
-                    :class="{
-                      'acc-sidebar-account-item--active':
-                        acc.id === (selectedSubAccountId || activeAccountId)
-                    }"
-                    @click="handleUiSelectSubAccount(acc)">
-                    <div class="acc-sidebar-account-top">
-                      <span class="acc-sidebar-account-icon">
-                        <i class="fa-solid fa-user-group"></i>
-                      </span>
-                      <span class="acc-sidebar-account-name">
-                        {{ acc.owner_name || currentUser?.full_name || currentUser?.email || 'Cuenta' }}
-                      </span>
-                    </div>
-
-                    <div class="acc-sidebar-account-bottom">
-                      <span class="acc-sidebar-account-login">
-                        {{ acc.login || acc.account_number }}
-                      </span>
-                      <span class="acc-sidebar-account-balance">
-                        {{ formatMoney(acc.balance || 0) }}
-                        {{ acc.currency || 'USD' }}
-                      </span>
-                    </div>
-                  </button>
-                </div>
-
+                <button class="acc-tab-btn" @click="signOut" v-if="currentUser">
+                  <span class="acc-tab-icon">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                  </span>
+                  <span class="acc-tab-text">Logout</span>
+                </button>
 
                 <div class="acc-sidebar-footer">
                   <p class="acc-sidebar-copy">
-                    © Web Trading Terminal - Traderoom<br>
-                    <a href="#" class="acc-link">Acuerdo de licencia de usuario final</a>
+                    © App Web Terminal - Traderoom<br>
+                    <a href="#" class="acc-link">End User License Agreement.</a>
                   </p>
                 </div>
               </aside>
@@ -108,7 +83,7 @@
                 
                 <!-- TAB 1: CONECTARSE A LA CUENTA -->
                 <div v-if="accountsTab === 'login'" class="acc-pane">
-                  <h3 class="acc-pane-title">Conectarse a la cuenta</h3>
+                  <h3 class="acc-pane-title">Login to your account</h3>
 
                   <div class="acc-form-grid">
                     <div class="acc-form-row">
@@ -123,7 +98,7 @@
 
                     <div class="acc-form-row acc-form-row--password">
                       <div class="acc-form-left">
-                        <label class="acc-label">Contraseña</label>
+                        <label class="acc-label">Password</label>
                         <input
                           v-model="authPassword"
                           type="password"
@@ -133,20 +108,20 @@
                       </div>
                       <label class="acc-checkbox">
                         <input type="checkbox">
-                        <span>Guardar contraseña</span>
+                        <span>Save Password</span>
                       </label>
                     </div>
 
                     <div class="acc-form-row acc-form-row--smalltext acc-mt2">
                       <span class="acc-help-text">
-                        ¿Olvidó su contraseña?
-                        <a href="#" class="acc-link">Contacte con la compañía</a>
+                        Forgot your password?
+                        <a href="#" class="acc-link">Contact support</a>
                       </span>
                     </div>
 
                     <div class="acc-form-row acc-mt">
-                      <label class="acc-label">Servidor</label>
-                      <div class="acc-static-field">WebTerminal - Real</div>
+                      <label class="acc-label">Server</label>
+                      <div class="acc-static-field">app.webterminal - Real</div>
                     </div>
                   </div>
 
@@ -154,31 +129,36 @@
                     <p v-if="authError" style="color:#ef4444; margin-top:8px;">
                       {{ authError }}
                     </p>
-                    <button class="acc-btn acc-btn--primary" @click="signIn()">
-                      Conectarse a la cuenta
+                    <button class="acc-btn acc-btn--secondary"
+                      style="margin-left: 8px;" @click="signOut" v-if="currentUser">
+                      Logout
                     </button>
+                    <button class="acc-btn acc-btn--primary" @click="signIn()" v-if="!currentUser">
+                      Login to your account
+                    </button>
+                    
                   </div>
                 </div>
 
                 <!-- TAB 2: ABRIR CUENTA DEMO -->
                 <div v-if="accountsTab === 'demo'" class="acc-pane">
-                  <h3 class="acc-pane-title">Abrir cuenta demo</h3>
+                  <h3 class="acc-pane-title">Open demo account</h3>
 
                   <div class="acc-form-grid">
                     <div class="acc-form-row">
-                      <label class="acc-label">Empresa</label>
+                      <label class="acc-label">Platform</label>
                       <div class="acc-static-field acc-static-field--link">
-                        Bursa Prime Ltd.
+                        Trading Terminal
                       </div>
                     </div>
 
                     <div class="acc-form-row acc-form-row--two">
                       <div>
-                        <label class="acc-label">Nombre</label>
+                        <label class="acc-label">Name</label>
                         <input type="text" class="acc-input" placeholder="Nombre">
                       </div>
                       <div>
-                        <label class="acc-label">Apellido</label>
+                        <label class="acc-label">Surname</label>
                         <input type="text" class="acc-input" placeholder="Apellido">
                       </div>
                     </div>
@@ -189,20 +169,20 @@
                     </div>
 
                     <div class="acc-form-row">
-                      <label class="acc-label">Teléfono móvil</label>
+                      <label class="acc-label">Phone</label>
                       <input type="text" class="acc-input" placeholder="Número de teléfono">
                     </div>
 
                     <div class="acc-form-row">
                       <label class="acc-checkbox">
                         <input type="checkbox">
-                        <span>Utilizar cobertura en el comercio</span>
+                        <span>Use hedging in trading</span>
                       </label>
                     </div>
 
                     <div class="acc-form-row acc-form-row--two">
                       <div>
-                        <label class="acc-label">Tipo de cuenta</label>
+                        <label class="acc-label">Account type</label>
                         <select class="acc-input">
                           <option>Forex Hedged USD</option>
                         </select>
@@ -211,17 +191,21 @@
 
                     <div class="acc-form-row acc-form-row--two acc-form-row--deposit">
                       <div class="acc-input-group">
-                        <label class="acc-label">Depósito</label>
+                        <label class="acc-label">Deposit</label>
                         <div class="acc-input-multi">
                           <input type="text" class="acc-input" value="100000">
                           <span class="acc-input-addon">USD</span>
                         </div>
                       </div>
                       <div class="acc-input-group">
-                        <label class="acc-label">Apalancamiento</label>
+                        <label class="acc-label">Leverage</label>
                         <select class="acc-input">
+                          <option>1:10</option>
+                          <option>1:20</option>
+                          <option>1:50</option>
                           <option>1:100</option>
                           <option>1:200</option>
+                          <option>1:400</option>
                           <option>1:500</option>
                         </select>
                       </div>
@@ -231,26 +215,26 @@
                       <label class="acc-checkbox">
                         <input type="checkbox">
                         <span>
-                          Acepto los términos y condiciones para abrir una cuenta y la política de protección de datos
+                          I accept the terms and conditions to open an account and the data protection policy.
                         </span>
                       </label>
                     </div>
 
                     <div class="acc-form-row acc-form-row--smalltext">
-                      <a href="#" class="acc-link">www.metaquotes.net</a>
+                      <a href="#" class="acc-link">App Web Terminal</a>
                     </div>
                   </div>
 
                   <div class="acc-pane-footer">
                     <button class="acc-btn acc-btn--primary">
-                      Abrir cuenta demo
+                      Open demo account
                     </button>
                   </div>
                 </div>
 
                 <!-- TAB 3: ABRIR CUENTA REAL (MISMO LAYOUT, TEXTO DIFERENTE) -->
                 <div v-if="accountsTab === 'real'" class="acc-pane">
-                  <h3 class="acc-pane-title">Abrir cuenta real</h3>
+                  <h3 class="acc-pane-title">Open real account</h3>
 
                   <!-- Puedes reutilizar EXACTAMENTE el mismo formulario que demo -->
                   <!-- (si quieres diferenciar algo, aquí cambias textos o selects) -->
@@ -258,19 +242,19 @@
                     <!-- copia del contenido del tab demo -->
                     <!-- ... si quieres lo dejamos igual por ahora ... -->
                     <div class="acc-form-row">
-                      <label class="acc-label">Empresa</label>
+                      <label class="acc-label">Platform</label>
                       <div class="acc-static-field acc-static-field--link">
-                        MetaQuotes Ltd.
+                        Trading Terminal
                       </div>
                     </div>
 
                     <div class="acc-form-row acc-form-row--two">
                       <div>
-                        <label class="acc-label">Nombre</label>
+                        <label class="acc-label">Name</label>
                         <input type="text" class="acc-input" placeholder="Nombre">
                       </div>
                       <div>
-                        <label class="acc-label">Apellido</label>
+                        <label class="acc-label">Surname</label>
                         <input type="text" class="acc-input" placeholder="Apellido">
                       </div>
                     </div>
@@ -281,20 +265,20 @@
                     </div>
 
                     <div class="acc-form-row">
-                      <label class="acc-label">Teléfono móvil</label>
+                      <label class="acc-label">Phone</label>
                       <input type="text" class="acc-input" placeholder="Número de teléfono">
                     </div>
 
                     <div class="acc-form-row">
                       <label class="acc-checkbox">
                         <input type="checkbox">
-                        <span>Utilizar cobertura en el comercio</span>
+                        <span>Use hedging in trading</span>
                       </label>
                     </div>
 
                     <div class="acc-form-row acc-form-row--two">
                       <div>
-                        <label class="acc-label">Tipo de cuenta</label>
+                        <label class="acc-label">Account type</label>
                         <select class="acc-input">
                           <option>Forex Hedged USD</option>
                         </select>
@@ -303,7 +287,7 @@
 
                     <div class="acc-form-row acc-form-row--two acc-form-row--deposit">
                       <div class="acc-input-group">
-                        <label class="acc-label">Depósito</label>
+                        <label class="acc-label">Deposit</label>
                         <div class="acc-input-multi">
                           <input type="text" class="acc-input" value="100000">
                           <span class="acc-input-addon">USD</span>
@@ -312,8 +296,12 @@
                       <div class="acc-input-group">
                         <label class="acc-label">Apalancamiento</label>
                         <select class="acc-input">
+                          <option>1:10</option>
+                          <option>1:20</option>
+                          <option>1:50</option>
                           <option>1:100</option>
                           <option>1:200</option>
+                          <option>1:400</option>
                           <option>1:500</option>
                         </select>
                       </div>
@@ -323,19 +311,19 @@
                       <label class="acc-checkbox">
                         <input type="checkbox">
                         <span>
-                          Acepto los términos y condiciones para abrir una cuenta y la política de protección de datos
+                          I accept the terms and conditions to open an account and the data protection policy.
                         </span>
                       </label>
                     </div>
 
                     <div class="acc-form-row acc-form-row--smalltext">
-                      <a href="#" class="acc-link">www.metaquotes.net</a>
+                      <a href="#" class="acc-link">App Web Terminal</a>
                     </div>
                   </div>
 
                   <div class="acc-pane-footer">
                     <button class="acc-btn acc-btn--primary">
-                      Abrir cuenta real
+                      Open real account
                     </button>
                   </div>
                 </div>
@@ -352,7 +340,7 @@
                         <div class="acc-account-meta">
                           {{ activeSubAccount.login || activeSubAccount.account_number }}
                           -
-                          {{ activeSubAccount.server_name || activeSubAccount.server || 'Servidor' }}
+                          {{ activeSubAccount.server_name || activeSubAccount.server || 'Hedging-server' }}
                           -
                           {{ activeSubAccount.mode || 'Hedge' }}
                         </div>
@@ -367,15 +355,15 @@
                     <!-- GRID INFERIOR: NOMBRE / SERVIDOR / LOGIN -->
                     <div class="acc-account-grid">
                       <div>
-                        <span class="acc-account-small-label">Nombre</span>
+                        <span class="acc-account-small-label">Name</span>
                         <div class="acc-account-value">
                           {{ activeSubAccount.owner_name || currentUser?.email }}
                         </div>
                       </div>
                       <div>
-                        <span class="acc-account-small-label">Servidor</span>
+                        <span class="acc-account-small-label">Server</span>
                         <div class="acc-account-value">
-                          {{ activeSubAccount.server_name || activeSubAccount.server || 'Servidor' }}
+                          {{ activeSubAccount.server_name || activeSubAccount.server || 'Hedging-server' }}
                         </div>
                       </div>
                       <div>
@@ -387,11 +375,12 @@
                     </div>
 
                     <div class="acc-pane-footer acc-pane-footer--right">
-                      <button
-                        class="acc-btn acc-btn--primary"
-                        @click="handleSelectSubAccount(activeSubAccount)"
-                      >
-                        Conectarse a la cuenta
+                      <button class="acc-btn acc-btn--secondary"
+                        style="margin-left: 8px;" @click="signOut" v-if="currentUser">
+                        Logout
+                      </button>
+                      <button class="acc-btn acc-btn--primary"  @click="handleSelectSubAccount(activeSubAccount)" v-if="!isSubAccountActive(activeSubAccount)">
+                        Login to your account
                       </button>
                       <!-- Más adelante aquí metemos "Eliminar" si quieres -->
                     </div>
@@ -399,7 +388,7 @@
 
                   <template v-else>
                     <div class="acc-empty-text">
-                      No hay ninguna cuenta seleccionada.
+                      No account selected.
                     </div>
                   </template>
                 </div>
@@ -413,11 +402,11 @@
       </div>
     </div>
 
-    <!-- ✅ APP -->
     <div class="traderoom" :class="{ 'traderoom-blocked': !currentUser }">
 
       <div class="tr-layout">
-        <!-- SIDELEFT1 (columna izquierda) -->
+
+        <!-- SIDELEFT1 -->
         <aside id="sideleft1" class="sideleft1">
 
           <div class="sl-group sl-group2">
@@ -426,15 +415,7 @@
             </button>
           </div>
 
-          <div class="sl-group">
-            <button class="sl-btn"><i class="fa-solid fa-plus"></i></button>
-            <button class="sl-btn"><i class="fa-solid fa-crosshairs"></i></button>
-            <button class="sl-btn"><i class="fa-solid fa-ruler"></i></button>
-            <button class="sl-btn"><i class="fa-solid fa-pencil-ruler"></i></button>
-            <button class="sl-btn"><i class="fa-solid fa-chart-line"></i></button>
-            <button class="sl-btn"><i class="fa-regular fa-square"></i></button>
-            <button class="sl-btn"><i class="fa-solid fa-font"></i></button>
-          </div>
+
 
           <div class="sl-group sl-group-bottom">
             <button class="sl-btn"
@@ -447,7 +428,7 @@
               @click="handlePositionsTab('history', $event)">
               <i class="fa-solid fa-clock-rotate-left"></i>
             </button>
-            <button class="sl-btn"
+            <button class="sl-btn" v-if="!isInvestor"
               :class="{ active: activePositionsTab === 'journal' }"
               @click="handlePositionsTab('journal', $event)">
               <i class="fa-solid fa-book"></i>
@@ -456,10 +437,11 @@
 
         </aside>
 
-        <!-- ZONA SUPERIOR: TradingForm + Chart + Watchlist -->
+        <!-- TradingForm + Chart + Watchlist -->
         <div class="main-top">
 
-          <section id="tradingForm" class="trading-form" v-show="showTradingForm">
+          <section id="tradingForm" class="trading-form mobile-section"
+            v-show="isMobile ? mobileActiveView === 'trade' : showTradingForm"> <!-- :class="{ 'trading-form--readonly': isInvestor }" -->
 
             <div ref="handleRight" class="resize-handle resize-handle-right"></div>
             
@@ -520,7 +502,7 @@
                 <div v-show="showVolume">
                   <div class="ot-field-header">
                     <span>Volume</span>
-                    <span class="ot-right-text">1 000.00 AUD</span>
+                    <span class="ot-right-text"></span>
                   </div>
                   <div class="ot-stepper ot-stepper-lg"
                       :class="{ 'ot-stepper--disabled': isEditingPendingOrder }">
@@ -544,7 +526,7 @@
                   <div class="ot-col">
                     <div class="ot-field-header">
                       <span>Volume</span>
-                      <span class="ot-right-text">1 000.00 AUD</span>
+                      <span class="ot-right-text"></span>
                     </div>
                     <div class="ot-stepper"
                         :class="{ 'ot-stepper--disabled': isEditingPendingOrder }">
@@ -666,7 +648,7 @@
                         'mw-bid-up': bidDirection === 'up',
                         'mw-bid-down': bidDirection === 'down'
                       }">
-                      {{ activeBid }}
+                      {{ formatPrice(activeBid, activeInstrumentSymbol || undefined) }}
                     </div>
                     <div class="ot-price-divider"></div>
                     <div class="ot-price ot-price-right"
@@ -674,7 +656,7 @@
                         'mw-ask-up': askDirection === 'up',
                         'mw-ask-down': askDirection === 'down'
                       }">
-                      {{ activeAsk }}
+                      {{ formatPrice(activeAsk, activeInstrumentSymbol || undefined) }}
                     </div>
 
                   </div>
@@ -800,16 +782,16 @@
 
           </section>
 
-          <section id="chart" class="chart">
+          <section id="chart" class="chart mobile-section" v-show="isMobile ? mobileActiveView === 'chart' : true">
 
-            <div class="chart-top-left-box">
-                <span class="symbol-name">EURUSD</span>
+            <div class="chart-top-left-box" v-if="showMarketForm" :class="{ 'trading-form--readonly': isInvestor }">
+                <span class="symbol-name"></span>
                 <!-- QUICK FORM (como la imagen 1) -->
                 <div class="tf-quick-row">
                   <!-- LADO SELL -->
                   <div class="tf-quick-side tf-quick-side-sell">
                     <button class="tf-quick-block tf-quick-price" @click="placeMarketOrder('sell', quickVolume, true)">
-                      0.91150
+                      {{ formatPrice(activeBid, activeInstrumentSymbol || undefined) }}
                     </button>
                     <button class="tf-quick-block tf-quick-label" @click="placeMarketOrder('sell', quickVolume, true)">
                       SELL
@@ -839,7 +821,7 @@
                       BUY
                     </button>
                     <button class="tf-quick-block tf-quick-price" @click="placeMarketOrder('buy', quickVolume, true)">
-                      0.91163
+                      {{ formatPrice(activeAsk, activeInstrumentSymbol || undefined) }}
                     </button>
                   </div>
                 </div>
@@ -847,17 +829,21 @@
 
             <div class="chart-top-banner">
               <div class="btn-row">
-                <button class="fa-btn">
-                  <i class="fa-solid fa-object-ungroup"></i>
+                <button class="fa-btn" @click="toggleMarketForm">
+                  <i
+                    class="fa-solid fa-object-ungroup dual-icon"
+                    :class="{ 'dual-icon--active': showMarketForm }"
+                  ></i>
                 </button>
 
-                <button class="fa-btn" @click="toggleTradingForm">
+
+                <button class="fa-btn btn-hide" @click="toggleTradingForm">
                   <i class="fa-regular fa-clock dual-icon" 
                     :class="{ 'dual-icon--active': showTradingForm }"></i>
                   <span>New order</span>
                 </button>
 
-                <button class="fa-btn" @click="toggleWatchlist">
+                <button class="fa-btn btn-hide" @click="toggleWatchlist">
                   <i class="fa-solid fa-table-list dual-icon"
                       :class="{ 'dual-icon--active': showWatchlist }"></i>
                 </button>
@@ -877,76 +863,6 @@
                   style="height: calc(100% - 32px); width: 100%;"
                 ></div>
               </div>
-
-              <!-- PANEL PROVISIONAL PARA PROBAR SUPABASE AUTH -->
-              <div class="auth-test-panel">
-                <div class="auth-test-header">
-                  <span>Supabase Auth</span>
-                  <span class="auth-status" v-if="currentUser">
-                    {{ currentUser.email }}
-                  </span>
-                  <span class="auth-status auth-status--off" v-else>
-                    sin sesión
-                  </span>
-                </div>
-
-                <div class="auth-test-body" v-if="!currentUser">
-                  <div class="auth-switch">
-                    <button
-                      type="button"
-                      :class="{ active: authMode === 'login' }"
-                      @click="authMode = 'login'"
-                    >
-                      Login
-                    </button>
-                    <button
-                      type="button"
-                      :class="{ active: authMode === 'signup' }"
-                      @click="authMode = 'signup'"
-                    >
-                      Sign Up
-                    </button>
-                  </div>
-
-                  <input
-                    v-model="authEmail"
-                    type="email"
-                    class="auth-input"
-                    placeholder="Email"
-                  >
-                  <input
-                    v-model="authPassword"
-                    type="password"
-                    class="auth-input"
-                    placeholder="Password"
-                  >
-
-                  <button
-                    type="button"
-                    class="auth-main-btn"
-                    :disabled="authLoading"
-                    @click="authMode === 'login' ? signIn() : signUp()"
-                  >
-                    {{ authMode === 'login' ? 'Login' : 'Crear cuenta' }}
-                  </button>
-
-                  <p v-if="authError" class="auth-error">
-                    {{ authError }}
-                  </p>
-                </div>
-
-                <div class="auth-test-body" v-else>
-                  <button
-                    type="button"
-                    class="auth-main-btn auth-main-btn--danger"
-                    :disabled="authLoading"
-                    @click="signOut()"
-                  >
-                    Cerrar sesión
-                  </button>
-                </div>
-              </div>
-              <!-- PANEL PROVISIONAL PARA PROBAR SUPABASE AUTH -->
 
             </div>
 
@@ -994,11 +910,13 @@
 
           </section>
 
-          <section id="watchlist" class="watchlist" v-show="showWatchlist">
+          <section id="watchlist" class="watchlist mobile-section"
+            v-show="isMobile ? mobileActiveView === 'markets' : showWatchlist"> <!-- :class="{ 'trading-form--readonly': isInvestor }" -->
+
             <div ref="handleLeft" class="resize-handle resize-handle-left"></div>
 
             <!-- Search bar -->
-            <div class="wl-search-bar">
+            <div class="wl-search-bar" :class="{ 'trading-form--readonly': isInvestor }">
               <i class="fa-solid fa-magnifying-glass wl-search-icon"></i>
               <input
                 type="text"
@@ -1014,7 +932,7 @@
               <div class="mw-cell mw-symbol-head">Symbol</div>
               <div class="mw-cell">Bid</div>
               <div class="mw-cell">Ask</div>
-              <div class="mw-cell mw-right">Daily Ch...</div>
+              <div class="mw-cell mw-right">Change</div>
             </div>
 
             <div class="mw-body">
@@ -1059,45 +977,241 @@
                 <div class="mw-cell mw-right mw-change-up">%</div>
               </div>
 
-
-              <!-- 
-              <div class="mw-row mw-row-active">
-                <div class="mw-cell mw-symbol">
-                  <i class="fa-solid fa-caret-up mw-icon-up"></i>
-                  <span>AUDJPY</span>
-                </div>
-                <div class="mw-cell mw-bid-up">101.380</div>
-                <div class="mw-cell mw-ask-up">101.471</div>
-                <div class="mw-cell mw-right mw-change-up">0.47%</div>
-              </div>
-              <div class="mw-row">
-                <div class="mw-cell mw-symbol">
-                  <i class="fa-solid fa-caret-down mw-icon-down"></i>
-                  <span>AUDCHF</span>
-                </div>
-                <div class="mw-cell mw-bid-down">0.52207</div>
-                <div class="mw-cell mw-ask-down">0.52289</div>
-                <div class="mw-cell mw-right mw-change-up">0.11%</div>
-              </div>
-              <div class="mw-row">
-                <div class="mw-cell mw-symbol">
-                  <i class="fa-solid fa-circle-dot mw-icon-neutral"></i>
-                  <span>AUDPLN</span>
-                </div>
-                <div class="mw-cell">2.63122</div>
-                <div class="mw-cell">2.63225</div>
-                <div class="mw-cell mw-right">0%</div>
-              </div>
-              -->
-
             </div>
 
+          </section>
+
+
+          <section class="mobile-section hide-section-dp"
+            v-show="mobileActiveView === 'positions'">
+            <div class="positions-mobile">
+
+              <!-- OPEN + PENDING -->
+              <div v-if="activePositionsTab === 'orders'" class="pm-list">
+
+                <!-- ================= OPEN POSITIONS ================= -->
+                <div v-for="pos in openPositions"
+                  :key="pos.id"
+                  class="pm-card"
+                  @click="onPositionClick(pos)"
+                  @dblclick="onPositionDblClick(pos)">
+
+                  <!-- HEADER -->
+                  <div class="pm-header">
+                    <span class="pm-symbol">{{ pos.symbol }}</span>
+
+                    <span class="pm-type"
+                      :class="{
+                        'pm-buy': pos.side === 'buy',
+                        'pm-sell': pos.side === 'sell'
+                      }">
+                      {{ pos.side.toUpperCase() }}
+                    </span>
+
+                    <span class="pm-profit"
+                      :class="{
+                        'pm-profit-pos': (getOpenPositionProfit(pos) ?? 0) > 0,
+                        'pm-profit-neg': (getOpenPositionProfit(pos) ?? 0) < 0
+                      }">
+                      {{ formatProfit(getOpenPositionProfit(pos)) }}
+                    </span>
+                  </div>
+
+                  <!-- BODY -->
+                  <div class="pm-body">
+
+                    <div class="pm-row">
+                      <span>Volume</span>
+                      <span>{{ pos.quantity_lots }}</span>
+                    </div>
+
+                    <div class="pm-row">
+                      <span>Open</span>
+                      <span>{{ formatPrice(pos.avg_entry_price, pos.symbol) }} / {{ formatPrice(getMarketPriceForPosition(pos), pos.symbol) }}</span>
+                    </div>
+
+                    <div class="pm-row pm-sl-tp">
+                      <span>SL</span>
+                      <span>
+                        {{ pos.stop_loss ? formatPrice(pos.stop_loss, pos.symbol) : '' }}
+                      </span>
+                    </div>
+
+                    <div class="pm-row pm-sl-tp">
+                      <span>TP</span>
+                      <span>
+                        {{ pos.take_profit ? formatPrice(pos.take_profit, pos.symbol) : '' }}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  <!-- ACTION -->
+                  <div class="pm-action">
+                    <button class="pm-btn pm-btn-close"
+                      @click.stop="closePosition(pos)">
+                      X
+                    </button>
+                  </div>
+
+                </div>
+
+                
+                <!-- ================= ACCOUNT SUMMARY (MOBILE) ================= -->
+                <div class="pm-account-summary">
+                  <div class="pm-summary-grid">
+                    <div>
+                      <span class="pm-summary-label">Balance</span>
+                      <span class="pm-summary-value">
+                        {{ formatMoney(getActiveAccountBalance()) }}
+                      </span>
+                    </div>
+                    <div>
+                      <span class="pm-summary-label">Equity</span>
+                      <span class="pm-summary-value">
+                        {{ formatMoney(getAccountEquity()) }}
+                      </span>
+                    </div>
+                    <div>
+                      <span class="pm-summary-label">Margin</span>
+                      <span class="pm-summary-value">
+                        {{ formatMoney(getTotalMargin()) }}
+                      </span>
+                    </div>
+                    <div>
+                      <span class="pm-summary-label">Free</span>
+                      <span class="pm-summary-value">
+                        {{ formatMoney(getFreeMargin()) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="pm-summary-profit">
+                    <span class="pm-summary-label">Level</span>
+                    <span class="pm-summary-level">
+                      {{ getMarginLevel().toFixed(2) }}%
+                    </span>
+                    <span class="pm-summary-currency">USD</span>
+                    <span class="pm-summary-profit-value"
+                      :class="{
+                        'pm-profit-pos': getTotalOpenProfit() > 0,
+                        'pm-profit-neg': getTotalOpenProfit() < 0
+                      }">
+                      {{ formatProfit(getTotalOpenProfit()) }}
+                    </span>
+                  </div>
+                </div>
+
+
+                <!-- ================= PENDING ORDERS ================= -->
+                <div v-for="ord in pendingOrders"
+                  :key="ord.id"
+                  class="pm-card pm-card--pending"
+                  @click="onPendingClick(ord)"
+                  @dblclick="onPendingDblClick(ord)">
+
+                  <!-- HEADER -->
+                  <div class="pm-header">
+                    <span class="pm-symbol">{{ ord.symbol }}</span>
+                    <span class="pm-type">{{ formatOrderType(ord) }}</span>
+                    <span class="pm-status">Pending</span>
+                  </div>
+
+                  <!-- BODY -->
+                  <div class="pm-body">
+                    <div class="pm-row">
+                      <span>Volume</span>
+                      <span>{{ ord.quantity_lots }}</span>
+                    </div>
+                    <div class="pm-row">
+                      <span>Price</span>
+                      <span>{{ formatPrice(ord.price || ord.stop_price, ord.symbol) }}</span>
+                    </div>
+                    <div class="pm-row pm-sl-tp">
+                      <span>SL</span>
+                      <span>
+                        {{ ord.stop_loss ? formatPrice(ord.stop_loss, ord.symbol) : '' }}
+                      </span>
+                    </div>
+                    <div class="pm-row pm-sl-tp">
+                      <span>TP</span>
+                      <span>
+                        {{ ord.take_profit ? formatPrice(ord.take_profit, ord.symbol) : '' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- ACTION -->
+                  <div class="pm-action">
+                    <button class="pm-btn pm-btn-cancel"
+                      @click.stop="cancelPendingOrder(ord)">
+                      X
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <section class="mobile-section hide-section-dp"
+            v-show="mobileActiveView === 'history'">
+            <div class="positions-mobile">
+
+              <div class="pm-list">
+
+                <!-- ================= HISTORY ROWS ================= -->
+                <div v-for="row in historyRows"
+                  :key="row.ticket"
+                  class="pm-card pm-card--history">
+
+                  <!-- HEADER -->
+                  <div class="pm-header">
+                    <span class="pm-symbol">{{ row.symbol || 'Balance' }}</span>
+
+                    <span class="pm-type"
+                      :class="{
+                        'pm-buy': row.type.toLowerCase().includes('buy'),
+                        'pm-sell': row.type.toLowerCase().includes('sell')
+                      }">
+                      {{ row.type }}
+                    </span>
+
+                    <span class="pm-profit"
+                      :class="{
+                        'pm-profit-pos': Number(row.profit) > 0,
+                        'pm-profit-neg': Number(row.profit) < 0
+                      }">
+                      {{ formatProfit(row.profit) }}
+                    </span>
+                  </div>
+
+                  <!-- BODY -->
+                  <div class="pm-body">
+                    <div class="pm-row">
+                      <span>Volume</span>
+                      <span>{{ row.volumeText }}</span>
+                    </div>
+                    <div class="pm-row">
+                      <span>Open</span>
+                      <span>{{ row.priceOpen }}</span>
+                    </div>
+                    <div class="pm-row">
+                      <span>Close</span>
+                      <span>{{ row.priceClose }}</span>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
           </section>
 
         </div>
 
         <!-- POSITIONS -->
-        <section id="positions" class="positions" v-show="activePositionsTab">
+        <section id="positions" class="positions" v-show="activePositionsTab"> <!-- :class="{ 'trading-form--readonly': isInvestor }" -->
           <div ref="handleTop" class="resize-handle resize-handle-top"></div>
           
           <div class="pos-table-container">
@@ -1110,7 +1224,7 @@
                     <tr>
                       <th class="col-symbol">Symbol</th>       <!-- 1 -->
                       <th class="col-ticket">Ticket</th>       <!-- 2 -->
-                      <th class="col-time">Time</th>           <!-- 3 -->
+                      <th class="col-time">Date</th>           <!-- 3 -->
                       <th class="col-type">Type</th>           <!-- 4 -->
                       <th class="col-volume">Volume</th>       <!-- 5 -->
                       <th class="col-price-open">Price</th>    <!-- 6 -->
@@ -1119,8 +1233,7 @@
                       <th class="col-price-current">Price</th> <!-- 9 -->
                       <th class="col-swap">Swap</th>           <!-- 10 -->
                       <th class="col-profit">Profit</th>       <!-- 11 -->
-                      <th class="col-comment">Comment</th>     <!-- 12 -->
-                      <!-- 13 y 14 vacías pero existentes -->
+                      <th class="col-comment">Comment</th>  
                       <th class="col-extra1"></th>             <!-- 13 -->
                       <th class="col-extra2"></th>             <!-- 14 -->
                     </tr>
@@ -1128,21 +1241,21 @@
 
                   <tbody>
                     <!-- ===== OPEN POSITIONS ===== -->
-                    <tr class="pos-row"
+                    <tr class="pos-row" v-if="activeSubAccount"
                       v-for="pos in openPositions"
                       :key="pos.id"
                       @click="onPositionClick(pos)"
                       @dblclick="onPositionDblClick(pos)">
                       <td class="col-symbol">{{ pos.symbol || '-' }}</td>
                       <td class="col-ticket">{{ shortTicket(pos.ticket) }}</td>
-                      <td class="col-time">{{ formatDateTime(pos.opened_at || pos.created_at) }}</td>
+                      <td class="col-time">{{ pos.datetext ? pos.datetext : formatDateTime(new Date()) }}</td>
                       <td class="col-type"
                         :class="{
                           'pos-type-buy': pos.side === 'buy',
                           'pos-type-sell': pos.side === 'sell'
                         }">{{ pos.side }}</td>
                       <td class="col-volume">{{ pos.quantity_lots }}</td>
-                      <td class="col-price-open">{{ pos.avg_entry_price }}</td>
+                      <td class="col-price-open">{{ formatPrice(pos.avg_entry_price, pos.symbol) }}</td>
 
                       <td class="col-sl">
                         <!-- Botón X SOLO si hay SL -->
@@ -1173,8 +1286,8 @@
                         </span>
                       </td>
 
-                      <td class="col-price-current">{{ getMarketPriceForPosition(pos) ?? '' }}</td>
-                      <td class="col-swap">-</td>
+                      <td class="col-price-current">{{ formatPrice(getMarketPriceForPosition(pos), pos.symbol) }}</td>
+                      <td class="col-swap"> {{ pos.swaptext }} </td>
                       <td class="col-profit"
                         :class="{
                           'pos-profit-pos': (getOpenPositionProfit(pos) ?? 0) > 0,
@@ -1199,7 +1312,7 @@
                         Free margin: {{ formatMoney(getFreeMargin()) }}&nbsp;&nbsp;
                         Level: {{ getMarginLevel().toFixed(2) }}%
                       </td>
-                      <td class="col-swap">0.00</td>
+                      <td class="col-swap"><span v-if="!isInvestor">-441 697.47</span></td>
                       <td class="col-profit pos-profit-neg">{{ formatProfit(getTotalOpenProfit()) }}</td>
                       <td class="col-comment"
                         :class="{
@@ -1212,8 +1325,7 @@
                     </tr>
 
                     <!-- ===== PENDING POSITIONS ===== -->
-                    <tr 
-                      class="pos-row"
+                    <tr class="pos-row" v-if="activeSubAccount"
                       v-for="ord in pendingOrders"
                       :key="ord.id"
                       @click="onPendingClick(ord)"
@@ -1223,7 +1335,7 @@
                       <td class="col-time">{{ formatDateTime(ord.placed_at) }}</td>
                       <td class="col-type">{{ formatOrderType(ord) }}</td>
                       <td class="col-volume">{{ ord.quantity_lots }}</td>
-                      <td class="col-price-open">{{ ord.price || ord.stop_price }}</td>
+                      <td class="col-price-open">{{ formatPrice(ord.price || ord.stop_price, ord.symbol) }}</td>
                       <td class="col-sl">{{ ord.stop_loss ?? '' }}</td>
                       <td class="col-tp">{{ ord.take_profit ?? '' }}</td>
                       <td class="col-price-current">{{ formatPendingMarketPrice(ord) }}</td>
@@ -1374,13 +1486,13 @@
         </section>
 
         <!-- ===== MAIN MENU OVERLAY ===== -->
-        <div v-if="showMainMenu" class="mm-overlay" @click.self="closeMainMenu">
+        <div v-if="showMainMenu" class="mm-overlay mm-overlay--mobile" @click.self="closeMainMenu">
           <div class="mm-panel">
             <!-- Header cuenta -->
-            <div class="mm-header" @click.stop="openAccountsModal">
+            <div class="mm-header">
               <div class="mm-header-main">
                 <div class="mm-name">{{ currentUser.email }}</div>
-                <div class="mm-account">99290301 · Traderoom · Hedge</div>
+                <div class="mm-account">{{ mmAccountLine }}</div>
               </div>
               <div class="mm-badge">Real</div>
             </div>
@@ -1397,15 +1509,52 @@
 
                 <!-- Subpanel -->
                 <div class="mm-subpanel">
-                  <div class="mm-sub-item mm-sub-title" @click="openAccountsModal">
+
+                  <div class="mm-sub-item mm-sub-title">
                     <div class="mm-left">
                       <i class="fa-solid fa-border-all mm-icon"></i>
                       <span class="mm-label">Real account</span>
                     </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
                   </div>
 
-                  <div class="mm-sub-item">
+                  <!-- 🆕 LISTADO DE CUENTAS (SUBPANEL TRADING ACCOUNTS) -->
+                  <div v-if="subAccounts && subAccounts.length" class="mm-sub-accounts" @click="openAccountsModal">
+
+                    <div v-for="acc in subAccounts"
+                      :key="acc.id"
+                      class="mm-sub-account-item"
+                      :class="{
+                        'mm-sub-account-item--active':
+                          acc.id === (selectedSubAccountId || activeAccountId)
+                      }"
+                      @click.stop="handleUiSelectSubAccount(acc);
+                                  openAccountsModal();">
+                      <!-- TOP -->
+                      <div class="mm-sub-account-top">
+                        <i class="fa-solid fa-user-group mm-sub-account-icon"></i>
+
+                        <span class="mm-sub-account-name">
+                          {{ acc.owner_name || currentUser?.email || 'Account' }}
+                        </span>
+                      </div>
+
+                      <!-- BOTTOM -->
+                      <div class="mm-sub-account-bottom">
+                        <span class="mm-sub-account-login">
+                          {{ acc.login || acc.account_number }}
+                        </span>
+
+                        <span class="mm-sub-account-balance">
+                          {{ formatMoney(acc.balance || 0) }}
+                          {{ acc.currency || 'USD' }}
+                        </span>
+                      </div>
+
+                    </div>
+                  </div>
+
+
+                  <div class="mm-sub-item" v-if="!isInvestor">
                     <div class="mm-left">
                       <i class="fa-solid fa-arrow-right-arrow-left mm-icon"></i>
                       <span class="mm-label">Demo account</span>
@@ -1416,257 +1565,16 @@
               </li>
 
               <li class="mm-item mm-item-chart-settings">
-                <div class="mm-left">
-                  <i class="fa-solid fa-chart-line mm-icon"></i>
-                  <span class="mm-label">Chart settings</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-
-                <!-- Subpanel -->
-                <div class="mm-subpanel">
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-border-all mm-icon"></i>
-                      <span class="mm-label">Grid</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-right-arrow-left mm-icon"></i>
-                      <span class="mm-label">Trade Orders</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-trend-up mm-icon"></i>
-                      <span class="mm-label">Trade Positions</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Trade History</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrows-down-to-line mm-icon"></i>
-                      <span class="mm-label">SL/TP Levels</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-rectangle-list mm-icon"></i>
-                      <span class="mm-label">Ask Price</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-regular fa-circle-dot mm-icon"></i>
-                      <span class="mm-label">Chart Controls</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-regular fa-bell mm-icon"></i>
-                      <span class="mm-label">Trade Notification</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-crosshairs mm-icon"></i>
-                      <span class="mm-label">Crosshair cursor</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-table-cells mm-icon"></i>
-                      <span class="mm-label">Show OHLC</span>
-                    </div>
-                  </div>
-                </div>
-
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-solid fa-mouse-pointer mm-icon"></i>
-                  <span class="mm-label">One Click Trading</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-regular fa-sun mm-icon"></i>
-                  <span class="mm-label">Light Theme</span>
-                </div>
-              </li>
-
-              <li class="mm-item mm-item-chart-settings">
-                <div class="mm-left">
-                  <i class="fa-solid fa-palette mm-icon"></i>
-                  <span class="mm-label">Color Templates</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-
-                <!-- Subpanel -->
-                <div class="mm-subpanel">
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-border-all mm-icon"></i>
-                      <span class="mm-label">Green & Red</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-right-arrow-left mm-icon"></i>
-                      <span class="mm-label">Blue & Red</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-trend-up mm-icon"></i>
-                      <span class="mm-label">Black & White</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Neutral</span>
-                    </div>
-                  </div>
-                </div>
-        
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-solid fa-robot mm-icon"></i>
-                  <span class="mm-label">MQL5 Algo Trading</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-              </li>
-
-              <li class="mm-item mm-item-chart-settings">
-                <div class="mm-left">
-                  <i class="fa-solid fa-chart-column mm-icon"></i>
-                  <span class="mm-label">MetaTrader 5</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-
-                <!-- Subpanel -->
-                <div class="mm-subpanel">
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-border-all mm-icon"></i>
-                      <span class="mm-label">Windows</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-right-arrow-left mm-icon"></i>
-                      <span class="mm-label">MacOS</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-arrow-trend-up mm-icon"></i>
-                      <span class="mm-label">Linux</span>
-                    </div>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">iPhone/iPad - AppStore</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Google Play</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Huawei Store</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Download APK</span>
-                    </div>
-                  </div>
-                </div>
-
-              </li>
-
-              <li class="mm-item mm-item-chart-settings">
-                <div class="mm-left">
+                <a href="https://es.tradingview.com/economic-calendar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mm-left"
+                  style="text-decoration: none; color: inherit;">
                   <i class="fa-regular fa-calendar-days mm-icon"></i>
                   <span class="mm-label">Economic Calendar</span>
-                </div>
-                <i class="fa-solid fa-chevron-right mm-arrow"></i>
-
-                <!-- Subpanel -->
-                <div class="mm-subpanel">
-                  <div class="mm-sub-item mm-sub-title">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-border-all mm-icon"></i>
-                      <span class="mm-label">Tradays Website</span>
-                    </div>
-                    <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                  </div>
-
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">iPhone/iPad - AppStore</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Google Play</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Huawei Store</span>
-                    </div>
-                  </div>
-                  <div class="mm-sub-item">
-                    <div class="mm-left">
-                      <i class="fa-solid fa-clock-rotate-left mm-icon"></i>
-                      <span class="mm-label">Android - Download APK</span>
-                    </div>
-                  </div>
-                </div>
-
+                </a>
               </li>
+
 
               <li class="mm-item mm-item-chart-settings">
                 <div class="mm-left">
@@ -1683,37 +1591,10 @@
                       <div class="mm-left">
                         <span class="mm-label">English</span>
                       </div>
-                      <i class="fa-solid fa-chevron-down mm-arrow"></i>
-                    </div>
-
-                    <div class="mm-sub-item">
-                      <div class="mm-left">
-                        <span class="mm-label">Spanish</span>
-                      </div>
+                      <i class="fa-solid fa-check mm-arrow"></i>
                     </div>
                   </div>
 
-                </div>
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-regular fa-circle-question mm-icon"></i>
-                  <span class="mm-label">Shortcuts</span>
-                </div>
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-regular fa-comments mm-icon"></i>
-                  <span class="mm-label">Contact us</span>
-                </div>
-              </li>
-
-              <li class="mm-item">
-                <div class="mm-left">
-                  <i class="fa-regular fa-circle-xmark mm-icon"></i>
-                  <span class="mm-label">About program</span>
                 </div>
               </li>
             </ul>
@@ -1723,9 +1604,71 @@
 
       </div>
 
+      <!-- ================= MOBILE BOTTOM BAR ================= -->
+      <nav class="mobile-bottom-bar">
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': mobileActiveView === 'chart' && !showMainMenu }"
+          @click="setMobileView('chart')"
+        >
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Chart</span>
+        </button>
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': mobileActiveView === 'trade' && !showMainMenu }"
+          @click="setMobileView('trade')"
+        >
+          <i class="fa-solid fa-arrow-right-arrow-left"></i>
+          <span>Trade</span>
+        </button>
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': mobileActiveView === 'markets' && !showMainMenu }"
+          @click="setMobileView('markets')"
+        >
+          <i class="fa-solid fa-chart-area"></i>
+          <span>Markets</span>
+        </button>
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': mobileActiveView === 'positions' && !showMainMenu }"
+          @click="setMobileView('positions')"
+        >
+          <i class="fa-solid fa-list-ul"></i>
+          <span>Positions</span>
+        </button>
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': mobileActiveView === 'history' && !showMainMenu }"
+          @click="setMobileView('history')"
+        >
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>History</span>
+        </button>
+
+        <button
+          class="mbb-item"
+          :class="{ 'mbb-item--active': showMainMenu }"
+          @click="openMobileAccountMenu"
+        >
+          <i class="fa-solid fa-user"></i>
+          <span>Account</span>
+        </button>
+
+      </nav>
+
+
+
     </div>
 
   </div>
+
 </div>
 
 
@@ -1793,31 +1736,6 @@ function formatSpaceNumber(value: any, decimals: number): string {
 }
 
 
-// =========================================================
-// HELPER DE LOCAL SOTRAGE
-// =========================================================
-function getOrCreateTabId(): string {
-  const KEY = 'traderoom_tab_id';
-
-  try {
-    const existing = sessionStorage.getItem(KEY);
-    if (existing) return existing;
-
-    const id =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? (crypto as any).randomUUID()
-        : `tab-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-
-    sessionStorage.setItem(KEY, id);
-    return id;
-  } catch {
-    // fallback por si sessionStorage falla (modo privado raro, etc.)
-    return `tab-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-  }
-}
-
-
-
 /* ==================================================================
 =====================================================================
 EXPORT DEFAULT 
@@ -1829,6 +1747,7 @@ export default {
 
   data() {
     return {
+      positionDateFallback: {} as Record<string | number, string>,
       // AUTH SUPABASE
       authEmail: '' as string,
       authPassword: '' as string,
@@ -1836,23 +1755,19 @@ export default {
       authLoading: false as boolean,
       authError: null as string | null,
 
+      // LOADING PAGE
+      tvLoading: false,
+      tvInitialLoadDone: false as boolean,
+
       // CONTEXTO TRADING
       currentUser: null as any, // luego si quieres lo cambiamos a User de Supabase
       authReady: false,
-
-      // LOCAL STORAGE
-      appReady: false,               // 🔐 control de inicialización
-      isRestoringWorkspace: false,   // 🔐 control de inicialización
-      _booting: false,               // 🔐 blindaje
-      _booted: false,                // 🔐 blindaje
-      tabId: '' as string,
 
       activeAccountId: null as string | number | null,
       activeInstrumentId: null as string | number | null,
       activeInstrumentSymbol: null as string | null, // CAMBIO
       activeInstrumentTvSymbol: null as string | null,
       editingMode: null as string | null, // CAMBIO
-
       destroyResizers: null as null | (() => void),
 
       // MODAL CUENTAS
@@ -1862,7 +1777,7 @@ export default {
       // SHOW MENU, TRADING FORM, WATCHLIST
       showMainMenu: false as boolean,
       showTradingForm: false as boolean, // TRADINGFORM - SHOW, CLOSE
-      showWatchlist: true as boolean, // WATCHLIST - SHOW, CLOSE
+      showWatchlist: false as boolean, // WATCHLIST - SHOW, CLOSE
 
       // TRADING FORM INPUTS
       orderType: 'market' as
@@ -1967,6 +1882,10 @@ export default {
       // Solo para debug en consola
       lastTick: null as PriceTick | null,
 
+      // WATCHLIST SEARCH
+      watchlistSearch: '' as string,
+      watchlistDropdownOpen: false as boolean,
+
       // WATCHLIST: PRECIOS REALES Y SINTÉTICOS
       realTicksBySymbol: {} as Record<string, PriceTick>,   // último tick real por símbolo
       prevRealTicksBySymbol: {} as Record<string, PriceTick>, // penúltimo tick real
@@ -2003,13 +1922,98 @@ export default {
         fee: 0,
         swap: 0,
         net: 0,         // profit + fee + swap (o como lo manejes)
-      }
+      },
+
+      // CHART MARKET FORM
+      showMarketForm: false,
+
+      // MOBILE RESPONSIVE
+      isMobile: window.innerWidth <= 900,
+      mobileActiveView: 'chart',
 
     };
   },
 
 
   methods: {
+
+    // DESKTOP - MOBILE
+    handleResize() {
+      const nowMobile = window.innerWidth <= 900
+      if (nowMobile !== this.isMobile) {
+        this.isMobile = nowMobile
+        if (!nowMobile) {
+          // 👉 saliendo de mobile → restaurar estado desktop
+          this.syncDesktopFromMobile()
+        }
+      }
+    },
+    syncDesktopFromMobile() {
+      this.showTradingForm = this.mobileActiveView === 'trade'
+      this.showWatchlist   = this.mobileActiveView === 'markets'
+    },
+
+    setMobileView(view: 'chart' | 'trade' | 'markets' | 'positions' | 'history') {
+      this.mobileActiveView = view;
+      this.showMainMenu = false; // 🔴 CIERRA ACCOUNT SIEMPRE
+    },
+
+
+
+    toggleMarketForm(): void {
+      this.showMarketForm = !this.showMarketForm;
+    },
+
+    isSubAccountActive(acc: any): boolean {
+      if (!acc) return false
+      return acc.id === this.activeAccountId
+    },
+
+     getPositionDateText(pos: any): string {
+      if (!pos) return '-'
+
+      // 1️⃣ Si Supabase mandó datetext → se respeta
+      if (pos.datetext) {
+        return pos.datetext
+      }
+
+      // 2️⃣ Fallback congelado (MT5 style)
+      const key = pos.id || pos.ticket
+
+      if (!this.positionDateFallback[key]) {
+        this.positionDateFallback[key] =
+          this.formatDateTime(new Date())
+      }
+
+      return this.positionDateFallback[key]
+    },
+
+    syncTradingFormPrice(symbol: string) {
+      const row = this.watchlistRows.find(r => r.symbol === symbol);
+      if (!row) return;
+
+      this.activeBid = row.bid;
+      this.activeAsk = row.ask;
+    },
+
+
+    waitForVisibleContainer(el: HTMLElement): Promise<void> {
+      return new Promise(resolve => {
+        const check = () => {
+          const w = el.clientWidth;
+          const h = el.clientHeight;
+
+          if (w > 100 && h > 100) {
+            resolve();
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        check();
+      });
+    },
+
+
     /* ==================================================================
     Backdrop click (no cierra si no hay sesión)
     ================================================================== */
@@ -2145,44 +2149,52 @@ export default {
     SUPABASE - Método para cambiar de subcuenta y “abrir” su Traderoom
     ================================================================== */
     async handleSelectSubAccount(acc: any): Promise<void> {
-      if (!acc || !acc.id) return
+      if (!acc || !acc.id) return;
 
-      // 1) Cambiamos la cuenta activa
-      this.activeAccountId = acc.id
+      // 1️⃣ Marcar subcuenta seleccionada (estado inmediato)
+      this.activeAccountId = acc.id;
+      this.activeSubAccount = acc;
 
-      // 2) Recargamos todo lo que depende de la cuenta
+      // 2️⃣ Cerrar el modal PRIMERO (clave para evitar freeze)
+      this.showAccountsModal = false;
+
+      // 3️⃣ Esperar a que el modal desaparezca del DOM
+      await this.$nextTick();
+
       try {
-        this.tradingLoading = true
+        // 4️⃣ Activar sesión lógica de trading
+        this.currentUser = acc;
 
+        this.tradingLoading = true;
+
+        // 5️⃣ Cargar datos dependientes de la cuenta
         await Promise.all([
           this.loadOpenPositions(),
-          this.loadPendingOrders?.(),   // si tienes este método
+          this.loadPendingOrders?.(),
           this.loadHistory(),
-          this.loadHistorySummary(), 
-        ])
+          this.loadHistorySummary(),
+        ]);
+
+        // 6️⃣ Inicializar TradingView SOLO aquí
+        this.initTradingViewWidget();
 
       } catch (err) {
-        console.error('Error al cambiar de subcuenta:', err)
+        console.error('Error al cambiar de subcuenta:', err);
       } finally {
-        this.tradingLoading = false
+        this.tradingLoading = false;
       }
-
-      // 3) Cerramos el modal
-      this.showAccountsModal = false
-
-      // ✅ workspace por pestaña (pro)
-      this.saveWorkspace();
-
-      // ✅ opcional: también guardar “default global”
-      this.saveDefaultPrefs();
-
     },
 
 
+
     handleUiSelectSubAccount(acc: any): void {
-      if (!acc || !acc.id) return
-      // Solo cambiamos la selección visual del modal
-      this.selectedSubAccountId = acc.id
+      if (!acc || !acc.id) return;
+
+      // 🔑 cuenta activa REAL (fuente de verdad)
+      this.activeSubAccount = acc;
+
+      // 🎨 selección visual
+      this.selectedSubAccountId = acc.id;
     },
 
 
@@ -3204,11 +3216,12 @@ export default {
 
 
     // =========================================================
-    // Profit flotante de una posición abierta (en USD)
+    // Profit flotante de una posición abierta (DEMO, en USD)
     // =========================================================
     getOpenPositionProfit(pos: any): number | null {
       if (!pos || !pos.symbol) return null;
 
+      // Tick actual
       const tick = this.pricesBySymbol[pos.symbol];
       if (!tick || tick.bid == null || tick.ask == null) return null;
 
@@ -3216,38 +3229,41 @@ export default {
       const ask = Number(tick.ask);
       if (!Number.isFinite(bid) || !Number.isFinite(ask)) return null;
 
-      const side = (pos.side || '').toLowerCase();
+      // Datos de la posición
+      const side = String(pos.side || '').toLowerCase(); // 'buy' | 'sell'
       const entryPrice = Number(pos.avg_entry_price);
       if (!Number.isFinite(entryPrice)) return null;
 
-      const lots = Number(pos.quantity_lots) || 0;
-      if (!lots || lots <= 0) return null;
+      const lots = Number(pos.quantity_lots);
+      if (!Number.isFinite(lots) || lots <= 0) return null;
 
-      // Tamaño de contrato (ej: 100000 para FX)
+      // Tamaño de contrato (CLAVE)
+      // EURUSD -> 100000
+      // XAUUSD -> 100
       const contractSize =
         this.contractSizeBySymbol[pos.symbol] != null
-          ? this.contractSizeBySymbol[pos.symbol]
-          : 100000;
+          ? Number(this.contractSizeBySymbol[pos.symbol])
+          : 100000; // fallback FX
 
-      // 👇 Precio al que cerrarías ahora:
-      // BUY -> cierras vendiendo al BID
-      // SELL -> cierras comprando al ASK
+      // Precio al que cerrarías AHORA
+      // BUY  -> cierras al BID
+      // SELL -> cierras al ASK
       const closePrice =
         side === 'buy'
-          ? bid   // long se cierra al bid
-          : ask;  // short se cierra al ask
+          ? bid
+          : ask;
 
       if (!Number.isFinite(closePrice)) return null;
 
-      // Diferencia de precio (pips en precio, no en pips)
+      // Diferencia de precio
       const diff =
         side === 'buy'
           ? closePrice - entryPrice
           : entryPrice - closePrice;
 
+      // PnL final
       const pnl = diff * contractSize * lots;
 
-      // Aquí de momento ignoramos comisión y swap (0)
       return pnl;
     },
 
@@ -3983,45 +3999,51 @@ export default {
     async initTradingViewWidget(tvSymbol?: string): Promise<void> {
       const vm = this as any;
 
-      // Contenedor principal (el mismo ref que ya usas)
       const container = this.$refs.tvWidgetContainer as HTMLElement | undefined;
       if (!container) {
         console.warn('[TV] No se encontró el contenedor del widget');
         return;
       }
 
-      // Símbolo a usar
+      // 🔥 CLAVE: esperar a que el contenedor tenga tamaño REAL
+      await this.waitForVisibleContainer(container);
+
       const symbol: string =
         tvSymbol || vm.activeInstrumentTvSymbol || 'FX:EURUSD';
 
       vm.activeInstrumentTvSymbol = symbol;
-      this.chartLoading = true;
 
-      // 1) Asegurar que tv.js esté cargado solo una vez
+      // 🔒 Loader SOLO en la primera carga real
+      const isFirstLoad = !this.tvInitialLoadDone;
+
+      if (isFirstLoad) {
+        this.tvLoading = true;
+        this.chartLoading = true;
+      }
+
+      // 1️⃣ Asegurar tv.js
       try {
         await this.ensureTradingViewScriptLoaded();
       } catch (err) {
         console.error('[TV] Error cargando tv.js', err);
+        this.tvLoading = false;
         this.chartLoading = false;
         return;
       }
 
-      // 2) Si ya existe un widget, solo cambiamos el símbolo
+      // 2️⃣ Si ya existe widget → SOLO cambiar símbolo (NO loader)
       if (vm.tvWidget && typeof vm.tvWidget.chart === 'function') {
         const chart = vm.tvWidget.chart();
         if (chart && typeof chart.setSymbol === 'function') {
-          chart.setSymbol(symbol, undefined, () => {
-            vm.chartLoading = false;
-          });
+          chart.setSymbol(symbol);
           console.log('[TV] setSymbol →', symbol);
           return;
         }
       }
 
-      // 3) Primera vez: crear el contenedor interno y el widget
+      // 3️⃣ Primera creación del widget
       const WIDGET_ID = 'tv-main-widget';
 
-      // Limpia el contenedor y crea un div interno fijo
       while (container.firstChild) {
         container.removeChild(container.firstChild);
       }
@@ -4032,7 +4054,6 @@ export default {
       widgetDiv.style.height = '100%';
       container.appendChild(widgetDiv);
 
-      // 4) Crear widget de TradingView (tv.js)
       vm.tvWidget = new (window as any).TradingView.widget({
         symbol,
         container_id: WIDGET_ID,
@@ -4041,8 +4062,6 @@ export default {
         timezone: 'Etc/UTC',
         theme: 'dark',
         autosize: true,
-
-        // Opciones similares a tu embed anterior
         hide_side_toolbar: false,
         hide_top_toolbar: false,
         hide_legend: true,
@@ -4055,11 +4074,22 @@ export default {
         save_image: false,
       });
 
+      // 🔓 SOLO se ejecuta UNA vez en toda la vida del widget
       vm.tvWidget.onChartReady(() => {
-        vm.chartLoading = false;
-        console.log('[TV] Widget listo con símbolo:', symbol);
+        if (!this.tvInitialLoadDone) {
+          this.tvInitialLoadDone = true;
+          // ✅ APAGAR loaders
+          this.tvLoading = false;
+          this.chartLoading = false;
+          console.log('[TV] Primera carga completada');
+        }
       });
+
     },
+
+
+
+
     
 
     /* ==================================================================
@@ -4191,16 +4221,18 @@ export default {
     /* =========================================================
     FORMATOS (miles con espacio + punto decimal)
     ========================================================= */
-    formatPrice(value: number | string, symbol?: string): string {
-      // decimals por símbolo desde Supabase (digitsBySymbol), fallback como ya tenías
-      const sym = symbol || '';
+    formatPrice(value: number | string | null | undefined, symbol?: string): string {
+      if (value == null || value === '') return '-';
+
+      const sym = symbol || this.activeInstrumentSymbol || '';
       const digits =
-        this.digitsBySymbol && this.digitsBySymbol[sym] != null
+        this.digitsBySymbol?.[sym] != null
           ? Number(this.digitsBySymbol[sym])
-          : (sym.includes('XAU') || sym.includes('XAG') ? 3 : 5);
+          : 5; // fallback seguro
 
       return formatSpaceNumber(value, digits);
     },
+
 
 
     formatProfit(value: number | null | undefined): string {
@@ -4500,29 +4532,25 @@ export default {
       // Actualizar gráfico
       vm.updateChartSymbol(tvSymbol);
 
-      // ✅ workspace por pestaña (pro)
-      this.saveWorkspace();
-
-      // ✅ opcional: también guardar “default global”
-      this.saveDefaultPrefs();
-
-
     },
 
 
     updateChartSymbol(symbol: string): void {
-      console.log('[TV] updateChartSymbol llamado con:', symbol);
-      // Simplemente volvemos a crear el widget con el nuevo símbolo
+      if (!symbol) return;
+
       this.initTradingViewWidget(symbol);
     },
 
 
+
     // Click del watchlist (wrapper pequeñito)
     onWatchlistRowClick(symbol: string): void {
+      if (!symbol) return;
+
       (this as any).setActiveInstrumentBySymbol(symbol);
-      // this.showTradingForm = true;
-      // this.resetTradingFormToMarketExecution();
+      this.syncTradingFormPrice(symbol);
     },
+
 
 
     /* ==================================================================
@@ -4647,7 +4675,9 @@ export default {
             status,
             opened_at,
             comment,
-            symbol
+            symbol,
+            swaptext,
+            datetext
           `)
           .eq('user_id', this.currentUser.id)
           .eq('account_id', this.activeAccountId)
@@ -5064,8 +5094,8 @@ export default {
     SUPABASE - LOGIN
     ================================================================== */
     async signIn(): Promise<void> {
-      this.authError = null;      // limpiamos error
-      this.authLoading = true;    // activamos loading
+      this.authError = null;
+      this.authLoading = true;
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -5082,16 +5112,40 @@ export default {
         this.showAccountsModal = false;
         this.accountsTab = 'account';
 
-        // 🔥 Tus cargas de datos después del login
-        await this.loadSubAccounts();           // CARGA SUBCUENTAS
-        await this.loadDefaultTradingContext(); // Cargar cuenta + instrumento por defecto
-        await this.loadOpenPositions();         // CARGA OPEN POSITIONS
-        await this.loadPendingOrders();         // CARGA PENDING POSITIONS
-        await this.loadHistory();               // CARGA HISTORY
+        // 1️⃣ CARGA SUBCUENTAS
+        await this.loadSubAccounts();
 
-        // Si quieres puedes quitar este alert ya, porque el cierre del modal
-        // es suficiente feedback visual:
-        // alert('Login correcto');
+        // 2️⃣ “Seleccionar subcuenta por defecto” SIN inventar funciones:
+        //    - garantiza que haya activeAccountId / selectedSubAccountId coherentes
+        if (this.subAccounts && this.subAccounts.length > 0) {
+          // Si por algo no quedó set, forzamos primera
+          if (!this.activeAccountId) {
+            this.activeAccountId = this.subAccounts[0].id;
+          }
+          // Selección del modal apunta a la activa
+          this.selectedSubAccountId = this.activeAccountId;
+        }
+
+        // 3️⃣ Cargar contexto por defecto (cuenta + instrumento)
+        //    (esto también puede setear activeAccountId)
+        await this.loadDefaultTradingContext();
+
+        // 4️⃣ CLAVE: esperar a que Vue aplique el estado antes de cargar tablas
+        await this.$nextTick();
+
+        // 🧱 Guard mínimo: si no hay cuenta activa, no intentes cargar
+        if (!this.activeAccountId) {
+          throw new Error('No se encontró una subcuenta activa para cargar datos.');
+        }
+
+        // 5️⃣ CARGAS DEPENDIENTES DE activeAccountId
+        await this.loadOpenPositions();
+        await this.loadPendingOrders();
+        await this.loadHistory();
+        await this.loadHistorySummary();
+
+        // (Opcional) limpiar password ya logueado
+        // this.authPassword = '';
 
       } catch (err: any) {
         console.error('Error signIn:', err);
@@ -5109,37 +5163,33 @@ export default {
       this.authLoading = true;
       this.authError = null;
 
-      // ✅ capturamos el id ANTES de limpiar currentUser
-      const uid = this.currentUser?.id;
-      const layoutKey = `traderoom_layout_${uid || 'guest'}`;
-      const prefsKey = `traderoom_prefs_${uid || 'guest'}`;
-
       try {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
 
-        // ✅ limpiar layout guardado (vuelve a defaults)
-        try {
-          sessionStorage.removeItem(layoutKey);
-        } catch {}
-
-        // ✅ limpiar preferencias (subcuenta activa, instrumento, etc.)
-        try {
-          localStorage.removeItem(prefsKey);
-        } catch {}
-
+        // 🔐 limpiar estado de sesión
         this.currentUser = null;
-        this.authEmail = '';
+        this.activeSubAccount = null;
+        this.selectedSubAccountId = null;
+        this.activeAccountId = null;
+
+        // 🧠 reset UI (CLAVE)
+        this.accountsTab = 'login';
+
+        // 🔑 limpiar credenciales
         this.authPassword = '';
 
-        alert('Sesión cerrada');
       } catch (err: any) {
         console.error('Error signOut:', err);
         this.authError = err.message;
+
       } finally {
         this.authLoading = false;
       }
     },
+
+
+
 
 
     /* ==================================================================
@@ -5175,6 +5225,10 @@ export default {
     },
 
 
+    openMobileAccountMenu(): void {
+      this.showMainMenu = true
+    },
+
     closeMainMenu(): void {
       this.showMainMenu = false;
     },
@@ -5187,36 +5241,29 @@ export default {
     ================================================================== */
     initResizers(): void {
       const root = this.$el as HTMLElement;
-      const layoutKey = `traderoom_layout_${this.currentUser?.id || 'guest'}`;
 
       const tradingQ   = root.querySelector('.trading-form') as HTMLElement | null;
       const watchQ     = root.querySelector('.watchlist') as HTMLElement | null;
       const positionsQ = root.querySelector('.positions') as HTMLElement | null;
 
-      // ✅ Handles por ref
-      const handleRightQ = this.$refs.handleRight as HTMLElement | undefined;
-      const handleLeftQ  = this.$refs.handleLeft  as HTMLElement | undefined;
-      const handleTopQ   = this.$refs.handleTop   as HTMLElement | undefined;
+      // Handles por ref
+      const handleRight = this.$refs.handleRight as HTMLElement | undefined;
+      const handleLeft  = this.$refs.handleLeft  as HTMLElement | undefined;
+      const handleTop   = this.$refs.handleTop   as HTMLElement | undefined;
 
-      // Si ya existían listeners previos, los quitamos
+      // Limpia listeners previos
       if (this.destroyResizers) {
         this.destroyResizers();
         this.destroyResizers = null;
       }
 
-      // Si aún no existe el DOM (por authReady/v-if), salimos
-      if (!tradingQ || !watchQ || !positionsQ || !handleRightQ || !handleLeftQ || !handleTopQ) {
+      if (!tradingQ || !watchQ || !positionsQ || !handleRight || !handleLeft || !handleTop) {
         return;
       }
 
-      // ✅ “Congelar” tipos
       const trading   = tradingQ;
       const watch     = watchQ;
       const positions = positionsQ;
-
-      const handleRight = handleRightQ;
-      const handleLeft  = handleLeftQ;
-      const handleTop   = handleTopQ;
 
       // Defaults
       const DEFAULT_TRADING_WIDTH = 400;
@@ -5227,75 +5274,35 @@ export default {
       const MAX_PANEL_WIDTH      = 599;
       const MIN_POSITIONS_HEIGHT = 120;
 
-      const clamp = (value: number, min: number, max: number): number =>
-        Math.min(max, Math.max(min, value));
+      const clamp = (v: number, min: number, max: number) =>
+        Math.min(max, Math.max(min, v));
 
-      // =========================
-      // ✅ Persistencia en sesión
-      // =========================
-      type LayoutState = { tradingWidth: number; watchWidth: number; positionsHeight: number };
+      // Tamaños iniciales (solo runtime)
+      let tradingWidth = trading.getBoundingClientRect().width || DEFAULT_TRADING_WIDTH;
+      let watchWidth   = watch.getBoundingClientRect().width   || DEFAULT_WATCH_WIDTH;
+      let positionsHeight =
+        positions.getBoundingClientRect().height || DEFAULT_POSITIONS_H;
 
-      const readLayout = (): LayoutState | null => {
-        try {
-          const raw = sessionStorage.getItem(layoutKey);
-          return raw ? (JSON.parse(raw) as LayoutState) : null;
-        } catch {
-          return null;
-        }
-      };
+      tradingWidth = clamp(tradingWidth, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
+      watchWidth   = clamp(watchWidth,   MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
+      positionsHeight = clamp(
+        positionsHeight,
+        MIN_POSITIONS_HEIGHT,
+        window.innerHeight * 0.5
+      );
 
-      const writeLayout = () => {
-        try {
-          const payload: LayoutState = { tradingWidth, watchWidth, positionsHeight };
-          sessionStorage.setItem(layoutKey, JSON.stringify(payload));
-        } catch {}
-      };
-
-      // =========================
-      // Inicializar tamaños
-      // =========================
-      let tradingWidth = DEFAULT_TRADING_WIDTH;
-      let watchWidth = DEFAULT_WATCH_WIDTH;
-      let positionsHeight = DEFAULT_POSITIONS_H;
-
-      // 1) Si hay guardado, úsalo
-      const saved = readLayout();
-      if (saved) {
-        tradingWidth = clamp(saved.tradingWidth, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
-        watchWidth   = clamp(saved.watchWidth,   MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
-        const maxHeight = window.innerHeight * 0.5;
-        positionsHeight = clamp(saved.positionsHeight, MIN_POSITIONS_HEIGHT, maxHeight);
-      } else {
-        // 2) Si no hay guardado, usa el DOM (o defaults si da 0)
-        {
-          const w = trading.getBoundingClientRect().width;
-          tradingWidth = w > 0 ? clamp(w, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH) : DEFAULT_TRADING_WIDTH;
-        }
-        {
-          const w = watch.getBoundingClientRect().width;
-          watchWidth = w > 0 ? clamp(w, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH) : DEFAULT_WATCH_WIDTH;
-        }
-        {
-          const h = positions.getBoundingClientRect().height;
-          const maxHeight = window.innerHeight * 0.5;
-          positionsHeight = h > 0 ? clamp(h, MIN_POSITIONS_HEIGHT, maxHeight) : DEFAULT_POSITIONS_H;
-        }
-      }
-
-      const updateCols = (): void => {
+      const updateCols = () => {
         trading.style.width = `${tradingWidth}px`;
         watch.style.width   = `${watchWidth}px`;
       };
 
-      const updateRows = (): void => {
+      const updateRows = () => {
         positions.style.height = `${positionsHeight}px`;
       };
 
-      // Aplicar tamaños iniciales (restaurados o defaults)
       updateCols();
       updateRows();
 
-      // Estado del drag
       let dragType: 'trading' | 'watch' | 'positions' | null = null;
       let startX = 0;
       let startY = 0;
@@ -5306,31 +5313,31 @@ export default {
         document.body.classList.toggle('is-resizing', on);
       };
 
-      // ✅ Pointer Events
-      const onPointerMove = (e: PointerEvent): void => {
+      const onPointerMove = (e: PointerEvent) => {
         if (!dragType) return;
         e.preventDefault();
 
         if (dragType === 'trading') {
-          const dx = e.clientX - startX;
-          tradingWidth = clamp(startWidth + dx, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
+          tradingWidth = clamp(startWidth + (e.clientX - startX), MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
           updateCols();
-        } else if (dragType === 'watch') {
-          const dx = startX - e.clientX;
-          watchWidth = clamp(startWidth + dx, MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
+        }
+
+        if (dragType === 'watch') {
+          watchWidth = clamp(startWidth + (startX - e.clientX), MIN_PANEL_WIDTH, MAX_PANEL_WIDTH);
           updateCols();
-        } else if (dragType === 'positions') {
-          const dy = startY - e.clientY;
-          const maxHeight = window.innerHeight * 0.5;
-          positionsHeight = clamp(startHeight + dy, MIN_POSITIONS_HEIGHT, maxHeight);
+        }
+
+        if (dragType === 'positions') {
+          positionsHeight = clamp(
+            startHeight + (startY - e.clientY),
+            MIN_POSITIONS_HEIGHT,
+            window.innerHeight * 0.5
+          );
           updateRows();
         }
       };
 
-      const onPointerUp = (): void => {
-        // ✅ Guardar al soltar (solo sesión)
-        writeLayout();
-
+      const onPointerUp = () => {
         dragType = null;
 
         document.removeEventListener('pointermove', onPointerMove);
@@ -5353,11 +5360,15 @@ export default {
           startX = e.clientX;
           startWidth = trading.getBoundingClientRect().width;
           handleRight.classList.add('active');
-        } else if (type === 'watch') {
+        }
+
+        if (type === 'watch') {
           startX = e.clientX;
           startWidth = watch.getBoundingClientRect().width;
           handleLeft.classList.add('active');
-        } else {
+        }
+
+        if (type === 'positions') {
           startY = e.clientY;
           startHeight = positions.getBoundingClientRect().height;
           handleTop.classList.add('active');
@@ -5386,7 +5397,6 @@ export default {
       handleLeft.addEventListener('pointerdown', onLeftDown, { passive: false });
       handleTop.addEventListener('pointerdown', onTopDown, { passive: false });
 
-      // Guardar cleanup
       this.destroyResizers = () => {
         handleRight.removeEventListener('pointerdown', onRightDown);
         handleLeft.removeEventListener('pointerdown', onLeftDown);
@@ -5404,21 +5414,28 @@ export default {
     },
 
 
+
     /* ==================================================================
     =====================================================================
     SECTION TARDINGFORM - SHOW, CLOSE  
     =====================================================================
     ================================================================== */
     toggleTradingForm(): void {
-      this.showTradingForm = !this.showTradingForm;
+      if (this.isMobile) {
+        // 📱 En mobile SIEMPRE usamos vistas
+        this.mobileActiveView = 'trade';
 
-      // Si LO ABRES → reset total a Market Execution
-      if (this.showTradingForm) {
+        // opcional: reset solo cuando entras
         this.resetTradingFormToMarketExecution();
-      }
+      } else {
+        // 🖥️ Desktop: toggle normal
+        this.showTradingForm = !this.showTradingForm;
 
-      // ✅ Guardar workspace por pestaña (UI change explícito del usuario)
-      this.saveWorkspace();
+        // Si LO ABRES → reset total a Market Execution
+        if (this.showTradingForm) {
+          this.resetTradingFormToMarketExecution();
+        }
+      }
     },
 
 
@@ -5464,7 +5481,16 @@ export default {
 
 
     closeTradingForm(): void {
-      this.showTradingForm = false;
+      if (this.isMobile) {
+        // 📱 En mobile nunca cerramos con boolean
+        this.mobileActiveView = 'chart';
+      } else {
+        // 🖥️ Desktop
+        this.showTradingForm = false;
+      }
+
+      // ⬇️ TODO lo demás queda IGUAL que ya lo tienes
+
       this.showOrderResultPanel = false;
 
       // Reset edición
@@ -5508,10 +5534,13 @@ export default {
     =====================================================================
     ================================================================== */
     toggleWatchlist(): void {
-      this.showWatchlist = !this.showWatchlist;
-
-      // ✅ Guardar workspace por pestaña (UI change explícito del usuario)
-      this.saveWorkspace();
+      if (this.isMobile) {
+        // 📱 Mobile → markets
+        this.mobileActiveView = 'markets';
+      } else {
+        // 🖥️ Desktop → toggle clásico
+        this.showWatchlist = !this.showWatchlist;
+      }
     },
 
 
@@ -5537,16 +5566,11 @@ export default {
           (event.currentTarget as HTMLElement).blur();
         }
 
-        // ✅ Cambio explícito del usuario → guardar workspace
-        this.saveWorkspace();
         return;
       }
 
       // Si era otro o ninguno → lo abrimos en este tab
       this.activePositionsTab = tab;
-
-      // ✅ Cambio explícito del usuario → guardar workspace
-      this.saveWorkspace();
 
       // Cargas SOLO si el usuario abre HISTORY
       if (tab === 'history') {
@@ -5558,131 +5582,30 @@ export default {
     },
 
 
-
-    /* ==================================================================
-    =====================================================================
-    LOCAL STORAGE - SUBACCOUNTS, SYMBOLS
-    =====================================================================
-    ================================================================== */
-    getPrefsKey(): string {
-      return `traderoom_prefs_${this.currentUser?.id || 'guest'}`;
-    },
-
-
-    /* ==================================================================
-    DEFAULT GLOBAL (localStorage) - SOLO “ÚLTIMO USADO”
-    ================================================================== */
-    saveDefaultPrefs(): void {
-      try {
-        const payload = {
-          activeAccountId: this.activeAccountId,
-          activeInstrumentId: this.activeInstrumentId,
-          activeInstrumentSymbol: this.activeInstrumentSymbol,
-        };
-        localStorage.setItem(this.getPrefsKey(), JSON.stringify(payload));
-      } catch (e) {
-        console.warn('No se pudo guardar prefs default', e);
-      }
-    },
-
-
-    loadPrefs(): { activeAccountId?: any; activeInstrumentId?: any; activeInstrumentSymbol?: any } | null {
-      try {
-        const raw = localStorage.getItem(this.getPrefsKey());
-        return raw ? JSON.parse(raw) : null;
-      } catch {
-        return null;
-      }
-    },
-
-
-    clearPrefs(): void {
-      try {
-        localStorage.removeItem(this.getPrefsKey());
-      } catch {}
-    },
-
-
-    /* ==================================================================
-    WORKSPACE POR PESTAÑA (sessionStorage) - NO SE PISA ENTRE TABS
-    ================================================================== */
-    getWorkspaceKey(): string {
-      const uid = this.currentUser?.id || 'guest';
-      // ✅ aislado por usuario + pestaña
-      return `traderoom_ws_${uid}_${this.tabId}`;
-    },
-
-
-    saveWorkspace(): void {
-      // 🛑 1) No guardar si la app aún no está lista
-      if (!this.appReady) return;
-
-      // 🛑 2) No guardar mientras se está restaurando estado
-      if (this.isRestoringWorkspace) return;
-
-      // 🛑 3) Validaciones mínimas (estado consistente)
-      if (!this.currentUser?.id) return;
-      if (!this.activeAccountId) return;
-
-      // Si tienes instrumentos dependientes de cuenta
-      if (!this.instruments || this.instruments.length === 0) return;
-
-      try {
-        const payload = {
-          // 🔐 contexto trading
-          activeAccountId: this.activeAccountId,
-          selectedSubAccountId: this.selectedSubAccountId,
-
-          activeInstrumentSymbol: this.activeInstrumentSymbol,
-
-          // 🔐 UI por pestaña
-          showTradingForm: this.showTradingForm,
-          showWatchlist: this.showWatchlist,
-          activePositionsTab: this.activePositionsTab,
-        };
-
-        sessionStorage.setItem(
-          this.getWorkspaceKey(),
-          JSON.stringify(payload)
-        );
-      } catch (err) {
-        console.error('[WORKSPACE] Error guardando workspace:', err);
-      }
-    },
-
-
-    loadWorkspace(): {
-      activeAccountId?: any;
-      selectedSubAccountId?: any;
-      activeInstrumentId?: any;
-      activeInstrumentSymbol?: any;
-      activeInstrumentTvSymbol?: any;
-      showTradingForm?: boolean;
-      showWatchlist?: boolean;
-      activePositionsTab?: 'orders' | 'history' | 'journal' | null;
-    } | null {
-      try {
-        const raw = sessionStorage.getItem(this.getWorkspaceKey());
-        return raw ? JSON.parse(raw) : null;
-      } catch {
-        return null;
-      }
-    },
-
-
-    clearWorkspace(): void {
-      try {
-        sessionStorage.removeItem(this.getWorkspaceKey());
-      } catch {}
-    },
-
-
-
-
   },
 
 
   watch: {
+
+    activeSubAccount: {
+      immediate: true,
+      async handler(acc) {
+        if (!acc?.id) return;
+
+        // 🔄 limpiar primero
+        this.openPositions = [];
+        this.pendingOrders = [];
+
+        // ⏳ esperar a que el estado reactive se aplique
+        await this.$nextTick();
+
+        // ✅ cargar usando la cuenta activa ya seteada
+        await this.loadOpenPositions();
+        await this.loadPendingOrders();
+      }
+    },
+
+
     /* ==================================================================
     =====================================================================
     TRADINGFORM INPUTS
@@ -5750,6 +5673,16 @@ export default {
       }
     },
 
+    watchlistRows: {
+      immediate: true,
+      handler(rows) {
+        if (!this.activeInstrumentSymbol && rows.length) {
+          this.activeInstrumentSymbol = rows[0].symbol;
+          this.syncTradingFormPrice(rows[0].symbol);
+        }
+      }
+    },
+
 
     /* =========================================================
     COLORES DE BID ASK DE TRADING FORM A MERCADO
@@ -5793,6 +5726,7 @@ export default {
 
 
   computed: {
+
     /* =========================================================
     SUPABASE - SUBCUENTAS
     ========================================================= */
@@ -5802,6 +5736,23 @@ export default {
       return this.subAccounts.find((a: any) => a.id === id) || null
     },
 
+    isInvestor() {
+      return this.activeSubAccount?.role === 'investor'
+    },
+
+    mmAccountLine(): string {
+      if (!this.activeSubAccount) return '';
+
+      const login =
+        this.activeSubAccount.login ||
+        this.activeSubAccount.account_number ||
+        '';
+
+      const type = this.activeSubAccount.type || 'Real';
+      const mode = this.activeSubAccount.mode || 'Hedge';
+
+      return `${login} · ${type} · ${mode}`;
+    },
 
     /* =========================================================
     TRADINGFORM - SYMBOLOS DEL WATCHLIST AL TRADINGFORM
@@ -5838,7 +5789,6 @@ export default {
         };
       });
     },
-
 
 
     /* ======== VALIDACIÓN DINÁMICA PARA NUEVAS ÓRDENES A MERCADO ======== */
@@ -6018,11 +5968,8 @@ export default {
     // 👈 EXPONEMOS LA INSTANCIA PARA DEBUG
     (window as any).app = this;
 
-    // ✅ TAB ID (workspace por pestaña)
-    if (this._booted || this._booting) return;
-    this._booting = true;
-
-    this.tabId = getOrCreateTabId();
+    // DESKTOP - MOBILE
+    window.addEventListener('resize', this.handleResize)
 
     /* ==================================================================
       SUPABASE – SESIÓN, MODAL Y CARGA INICIAL
@@ -6040,65 +5987,8 @@ export default {
       this.showAccountsModal = true;
       this.accountsTab = 'login';
     } else {
-      // 🔒 estamos restaurando estado
-      this.isRestoringWorkspace = true;
 
       await this.loadSubAccounts();
-
-      /* ================================================================
-        🔐 WORKSPACE POR PESTAÑA (PRIORIDAD)
-      ================================================================ */
-
-      const ws = this.loadWorkspace?.();
-
-      if (ws?.activeAccountId) {
-        const exists = this.subAccounts?.some(
-          (a: any) => a.id === ws.activeAccountId
-        );
-        if (exists) {
-          this.activeAccountId = ws.activeAccountId;
-          this.selectedSubAccountId =
-            ws.selectedSubAccountId || ws.activeAccountId;
-        }
-      }
-
-      if (ws?.activeInstrumentSymbol) {
-        this.activeInstrumentSymbol = ws.activeInstrumentSymbol;
-      }
-
-      if (typeof ws?.showTradingForm === 'boolean') {
-        this.showTradingForm = ws.showTradingForm;
-      }
-
-      if (typeof ws?.showWatchlist === 'boolean') {
-        this.showWatchlist = ws.showWatchlist;
-      }
-
-      if (ws?.activePositionsTab !== undefined) {
-        this.activePositionsTab = ws.activePositionsTab;
-      }
-
-      /* ================================================================
-        🔐 FALLBACK A PREFS GLOBALES (solo si NO hay workspace)
-      ================================================================ */
-
-      if (!ws) {
-        const prefs = this.loadPrefs?.();
-
-        if (prefs?.activeAccountId) {
-          const exists = this.subAccounts?.some(
-            (a: any) => a.id === prefs.activeAccountId
-          );
-          if (exists) {
-            this.activeAccountId = prefs.activeAccountId;
-            this.selectedSubAccountId = prefs.activeAccountId;
-          }
-        }
-
-        if (prefs?.activeInstrumentSymbol) {
-          this.activeInstrumentSymbol = prefs.activeInstrumentSymbol;
-        }
-      }
 
       /* ================================================================
         🔁 CARGAS DEPENDIENTES DE CUENTA
@@ -6110,97 +6000,14 @@ export default {
       await this.loadPendingOrders();
       await this.loadHistory();
       await this.loadHistorySummary();
-
-      // ✅ RESTAURACIÓN COMPLETA
-      this.isRestoringWorkspace = false;
     }
 
     // 👉 AHORA SÍ, la app está lista
     this.authReady = true;
-    this.appReady = true;
 
     // RESIZE HANDLE
     await this.$nextTick();
     this.initResizers();
-
-    /* ==================================================================
-      AUTH STATE CHANGE
-    ================================================================== */
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      this.currentUser = session?.user || null;
-
-      if (!this.currentUser) {
-        this.showAccountsModal = true;
-        this.accountsTab = 'login';
-        this.clearPrefs?.();
-      } else {
-        this.isRestoringWorkspace = true;
-
-        await this.loadSubAccounts();
-
-        const ws = this.loadWorkspace?.();
-
-        if (ws?.activeAccountId) {
-          const exists = this.subAccounts?.some(
-            (a: any) => a.id === ws.activeAccountId
-          );
-          if (exists) {
-            this.activeAccountId = ws.activeAccountId;
-            this.selectedSubAccountId =
-              ws.selectedSubAccountId || ws.activeAccountId;
-          }
-        }
-
-        if (ws?.activeInstrumentSymbol) {
-          this.activeInstrumentSymbol = ws.activeInstrumentSymbol;
-        }
-
-        if (typeof ws?.showTradingForm === 'boolean') {
-          this.showTradingForm = ws.showTradingForm;
-        }
-
-        if (typeof ws?.showWatchlist === 'boolean') {
-          this.showWatchlist = ws.showWatchlist;
-        }
-
-        if (ws?.activePositionsTab !== undefined) {
-          this.activePositionsTab = ws.activePositionsTab;
-        }
-
-        if (!ws) {
-          const prefs = this.loadPrefs?.();
-
-          if (prefs?.activeAccountId) {
-            const exists = this.subAccounts?.some(
-              (a: any) => a.id === prefs.activeAccountId
-            );
-            if (exists) {
-              this.activeAccountId = prefs.activeAccountId;
-              this.selectedSubAccountId = prefs.activeAccountId;
-            }
-          }
-
-          if (prefs?.activeInstrumentSymbol) {
-            this.activeInstrumentSymbol = prefs.activeInstrumentSymbol;
-          }
-        }
-
-        await this.loadWatchlistSymbols();
-        await this.loadInstruments();
-        await this.loadOpenPositions();
-        await this.loadPendingOrders();
-        await this.loadHistory();
-        await this.loadHistorySummary();
-
-        this.isRestoringWorkspace = false;
-      }
-
-      this.authReady = true;
-      this.appReady = true;
-
-      await this.$nextTick();
-      this.initResizers();
-    });
 
 
     /* ==================================================================
@@ -6231,23 +6038,22 @@ export default {
       this.initTradingViewWidget('FX:EURUSD');
     }
 
-    this._booting = false;
-    this._booted = true;
   },
 
 
   beforeUnmount() {
-  if (this.priceAnimationIntervalId) {
-    clearInterval(this.priceAnimationIntervalId);
-    this.priceAnimationIntervalId = null;
-  }
+
+    // DESKTOP - MOBILE
+    window.removeEventListener('resize', this.handleResize)
+
+    if (this.priceAnimationIntervalId) {
+      clearInterval(this.priceAnimationIntervalId);
+      this.priceAnimationIntervalId = null;
+    }
 },
 
 
-
-    
 };
-
 
 
 </script>

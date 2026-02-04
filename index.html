@@ -1,14 +1,22 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <!-- FAVICON -->
+    <link rel="icon" type="image/x-icon" href="/favicon.png" />
     <meta charset="UTF-8" />
-    <title>Broker – Home</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta http-equiv="refresh" content="0; url=/traderoom.html" />
+    <script>
+      window.location.replace('/traderoom.html')
+    </script>
+    <title>Redirecting…</title>
+    <script>
+      if (location.pathname === '/' || location.pathname === '/index.html') {
+        location.replace('/traderoom.html')
+      }
+    </script>
+
   </head>
   <body>
-    <div id="app"></div>
-    <!-- Entrada de Vue para la página home -->
-    <script type="module" src="/src/main-home.ts"></script>
+    Redirecting to Traderoom…
   </body>
 </html>
