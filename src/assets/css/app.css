@@ -1,0 +1,35 @@
+/* =========================================================
+   SAFARI iOS – FIX OVERFLOW HORIZONTAL
+   ========================================================= */
+
+/* 1. Bloqueo global de overflow horizontal */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 2. Safari viewport bug (100vw / fixed / blur) */
+body {
+  position: relative;
+}
+
+/* 3. Clase para glows / blurs grandes */
+.glow-fix {
+  overflow: hidden;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 4. Fix específico Safari iOS (backdrop-filter) */
+@supports (-webkit-touch-callout: none) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .tw-backdrop-blur-xl {
+    transform: translateZ(0);
+  }
+}

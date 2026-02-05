@@ -55,7 +55,7 @@
   <!-- ================= HERO ================= -->
   <section class="tw-relative tw-overflow-hidden tw-bg-black tw-pt-28 tw-pb-24">
     <!-- background shapes -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw--top-40 tw-left-1/2 tw-h-[600px] tw-w-[600px] tw--translate-x-1/2 tw-rounded-full tw-bg-blue-600/20 tw-blur-[120px]"
       ></div>
@@ -128,7 +128,7 @@
   <!-- ================= AI IMPACT METRICS 2 ================= -->
   <section id="platform" class="tw-relative tw-bg-black tw-py-24 tw-overflow-hidden tw--mt-18">
     <!-- Background glow -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[700px] tw-w-[700px] tw--translate-x-1/2 tw--translate-y-1/2 tw-rounded-full tw-bg-blue-600/20 tw-blur-[160px]"
       ></div>
@@ -216,7 +216,7 @@
   <!-- ================= FEATURES ================= -->
   <section id="capabilities" class="tw-relative tw-bg-black tw-py-24 tw--mt-18">
     <!-- background glow -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw-top-0 tw-left-1/2 tw-h-[500px] tw-w-[800px] tw--translate-x-1/2 tw-rounded-full tw-bg-blue-600/10 tw-blur-[160px]"
       ></div>
@@ -321,7 +321,7 @@
   <!-- ================= HERO ================= -->
   <section id="institutions" class="tw-relative tw-overflow-hidden tw-bg-black tw-py-24 tw--mt-8">
     <!-- background shapes -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw--top-40 tw-left-1/2 tw-h-[600px] tw-w-[600px] tw--translate-x-1/2 tw-rounded-full tw-bg-blue-600/20 tw-blur-[120px]"
       ></div>
@@ -390,7 +390,7 @@
   <!-- ================= TEAM / CAPABILITIES ================= -->
   <section class="tw-relative tw-bg-black tw-py-24 tw--mt-8 tw-overflow-hidden">
     <!-- Background glow -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw-left-1/2 tw-top-1/3 tw-h-[700px] tw-w-[700px] tw--translate-x-1/2 tw-rounded-full tw-bg-blue-600/20 tw-blur-[160px]"
       ></div>
@@ -491,7 +491,7 @@
   <!-- ================= INSIGHTS / BLOG ================= -->
   <section id="insights" class="tw-relative tw-bg-black tw-py-24 tw--mt-18">
     <!-- background glow -->
-    <div class="tw-absolute tw-inset-0">
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden">
       <div
         class="tw-absolute tw-top-1/2 tw-left-1/2 tw-h-[600px] tw-w-[600px] tw--translate-x-1/2 tw--translate-y-1/2 tw-rounded-full tw-bg-blue-600/10 tw-blur-[140px]"
       ></div>
@@ -615,7 +615,7 @@
   <!-- ================= CONTACT ================= -->
   <section id="contact" class="tw-relative tw-bg-black tw-overflow-hidden">
     <!-- Background gradient -->
-    <div class="tw-absolute tw-inset-0 tw-bg-gradient-to-b tw-from-[#0a0f2c] tw-via-[#060b1f] tw-to-black"></div>
+    <div class="tw-absolute tw-inset-0 tw-overflow-hidden tw-bg-gradient-to-b tw-from-[#0a0f2c] tw-via-[#060b1f] tw-to-black"></div>
 
     <div class="tw-relative tw-mx-auto tw-max-w-7xl tw-px-6 tw-py-32">
       <div class="tw-grid tw-grid-cols-1 tw-gap-16 lg:tw-grid-cols-2 tw-items-start">
