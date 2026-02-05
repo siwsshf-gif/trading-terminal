@@ -411,8 +411,10 @@
                   </div>
                   <div class="ot-stepper ot-stepper-lg"
                       :class="{ 'ot-stepper--disabled': isEditingPendingOrder }">
+
                     <button class="ot-step-btn"
-                      :disabled="isEditingPendingOrder" @click="volume = Math.max(0.01, +(volume - 0.01).toFixed(2))">-</button>
+                      :disabled="isEditingPendingOrder" @click="adjustNumber('volume', -1, 0.01, 0.01)">-</button>
+
                       <input class="ot-step-value-input"
                         type="number"
                         step="0.01"
@@ -420,8 +422,9 @@
                         value="0.01"
                         v-model.number="volume"
                         :disabled="isEditingPendingOrder">
+
                     <button class="ot-step-btn"
-                      @click="volume = +(volume + 0.01).toFixed(2)"
+                      @click="adjustNumber('volume',  1, 0.01, 0.01)"
                       :disabled="isEditingPendingOrder">+</button>
                   </div>
                 </div>
@@ -435,7 +438,7 @@
                     </div>
                     <div class="ot-stepper"
                         :class="{ 'ot-stepper--disabled': isEditingPendingOrder }">
-                      <button class="ot-step-btn"
+                      <button class="ot-step-btn" @click="adjustNumber('volume', -1, 0.01, 0.01)"
                               :disabled="isEditingPendingOrder">-</button>
 
                       <input class="ot-step-value-input"
@@ -443,7 +446,7 @@
                             v-model.number="volume"
                             :disabled="isEditingPendingOrder">
 
-                      <button class="ot-step-btn"
+                      <button class="ot-step-btn" @click="adjustNumber('volume',  1, 0.01, 0.01)"
                               :disabled="isEditingPendingOrder">+</button>
                     </div>
                   </div>
@@ -455,14 +458,14 @@
                       class="ot-stepper"
                       :class="{ 'ot-stepper--disabled': isEditingOpenPosition }"
                     >
-                      <button class="ot-step-btn" :disabled="isEditingOpenPosition">-</button>
+                      <button class="ot-step-btn" :disabled="isEditingOpenPosition" @click="adjustNumber('price', -1, 0.01, 0.01)">-</button>
                       <input
                         class="ot-step-value-input"
                         type="number"
                         v-model.number="price"
                         :disabled="isEditingOpenPosition"
                       />
-                      <button class="ot-step-btn" :disabled="isEditingOpenPosition">+</button>
+                      <button class="ot-step-btn" :disabled="isEditingOpenPosition" @click="adjustNumber('price', 1, 0.01, 0.01)">+</button>
                     </div>
 
                   </div>
@@ -475,9 +478,9 @@
                       <span>Price</span>
                     </div>
                     <div class="ot-stepper">
-                      <button class="ot-step-btn">−</button>
+                      <button class="ot-step-btn" @click="adjustNumber('price', -1, 0.01, 0.01)">−</button>
                       <input class="ot-step-value-input" type="number" v-model.number="price" />
-                      <button class="ot-step-btn">+</button>
+                      <button class="ot-step-btn" @click="adjustNumber('price', 1, 0.01, 0.01)">+</button>
                     </div>
                   </div>
                   <div class="ot-col">
@@ -485,9 +488,9 @@
                       <span>Stop Limit Price</span>
                     </div>
                     <div class="ot-stepper">
-                      <button class="ot-step-btn">−</button>
+                      <button class="ot-step-btn" @click="adjustNumber('stopLimitPrice', -1, 0.01, 0.01)">−</button>
                       <input class="ot-step-value-input" type="number" v-model.number="stopLimitPrice" />
-                      <button class="ot-step-btn">+</button>
+                      <button class="ot-step-btn" @click="adjustNumber('stopLimitPrice', 1, 0.01, 0.01)">+</button>
                     </div>
                   </div>
                 </div>
@@ -499,9 +502,9 @@
                       <span>Stop Loss</span>
                     </div>
                     <div class="ot-stepper">
-                      <button class="ot-step-btn">−</button>
+                      <button class="ot-step-btn" @click="adjustNumber('stopLoss', -1, 0.01, 0.01)">−</button>
                       <input class="ot-step-value-input" type="number" v-model.number="stopLoss" />
-                      <button class="ot-step-btn">+</button>
+                      <button class="ot-step-btn" @click="adjustNumber('stopLoss', 1, 0.01, 0.01)">+</button>
                     </div>
                   </div>
                   <div class="ot-col">
@@ -509,9 +512,9 @@
                       <span>Take Profit</span>
                     </div>
                     <div class="ot-stepper">
-                      <button class="ot-step-btn">−</button>
+                      <button class="ot-step-btn" @click="adjustNumber('takeProfit', -1, 0.01, 0.01)">−</button>
                       <input class="ot-step-value-input" type="number" v-model.number="takeProfit" />
-                      <button class="ot-step-btn">+</button>
+                      <button class="ot-step-btn" @click="adjustNumber('takeProfit', 1, 0.01, 0.01)">+</button>
                     </div>
                   </div>
                 </div>
@@ -1153,7 +1156,7 @@
                       @dblclick="onPositionDblClick(pos)">
                       <td class="col-symbol">{{ pos.symbol || '-' }}</td>
                       <td class="col-ticket">{{ shortTicket(pos.ticket) }}</td>
-                      <td class="col-time">{{ pos.datetext ? pos.datetext : formatDateTime(new Date()) }}</td>
+                      <td class="col-time">{{ getPositionDateText(pos) }}</td>
                       <td class="col-type"
                         :class="{
                           'pos-type-buy': pos.side === 'buy',
@@ -1299,9 +1302,9 @@
                       <td class="col-tp2">{{ row.tp }}</td>
                       <td class="col-time-dup2">{{ formatDateTime(row.timeClose) }}</td>
                       <td class="col-price-dup2">{{ row.priceClose }}</td>
-                      <td class="col-commission2">{{ row.commission }}</td>
-                      <td class="col-fee2">{{ row.fee }}</td>
-                      <td class="col-swap2">{{ row.swap }}</td>
+                      <td class="col-commission2">{{ formatOptionalMoney(row.commission) }}</td>
+                      <td class="col-fee2">{{ formatOptionalMoney(row.fee) }}</td>
+                      <td class="col-swap2">{{ formatOptionalMoney(row.swap) }}</td>
                       <td class="col-profit2"
                         :class="{
                           'pos-profit-pos2': Number(row.profit) > 0,
@@ -1839,6 +1842,34 @@ export default {
 
 
   methods: {
+
+    adjustNumber(
+      key: 'volume' | 'quickVolume' | 'stopLoss' | 'takeProfit' | 'price' | 'stopLimitPrice',
+      direction: 1 | -1,
+      step: number,
+      min: number
+    ) {
+      const value = this[key] ?? min
+      const next = value + direction * step
+      this[key] = Math.max(min, +next.toFixed(2))
+    },
+
+    incrementVolume(): void {
+      const step = 0.01
+      this.volume = +(this.volume + step).toFixed(2)
+    },
+
+    decrementVolume(): void {
+      const step = 0.01
+      const min = 0.01
+      this.volume = Math.max(min, +(this.volume - step).toFixed(2))
+    },
+
+    formatOptionalMoney(value: any): string {
+      const n = Number(value)
+      if (!n) return ''
+      return this.formatMoney(n)
+    },
 
     // DESKTOP - MOBILE
     handleResize() {

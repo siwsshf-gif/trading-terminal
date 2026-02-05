@@ -1779,7 +1779,7 @@ POSITIONS, PENDING TABLE
 .pos-table {
   width: 100%;
   border-collapse: collapse;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 /* header */
