@@ -3880,3 +3880,64 @@ MODAL CUENTAS COMERCIALES
   border-bottom: 1px solid var(--dark-bg-hover);
 }
 
+
+
+
+
+
+
+
+
+
+
+/* =========================================
+   FINAL FIX — CENTER LOGIN + 44px BUTTONS
+========================================= */
+@media (max-width: 900px) {
+
+  /* ===== CENTRAR CONTENIDO ===== */
+  .acc-modal-content {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;        /* 🔥 CENTRADO HORIZONTAL */
+    justify-content: center !important;    /* 🔥 CENTRADO VERTICAL */
+    padding: 24px 16px !important;
+    overflow-y: auto !important;
+  }
+
+  /* CONTENEDOR DEL LOGIN */
+  .acc-pane {
+    width: 100% !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+  }
+
+  /* =====================================
+     BOTONES — ALTURA FIJA 44px
+  ===================================== */
+
+  /* TODOS los botones */
+  .acc-btn,
+  .acc-btn--primary,
+  .acc-btn--secondary {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    padding: 0 16px !important;
+    line-height: 44px !important;          /* centra texto */
+    font-size: 15px !important;
+    border-radius: 4px !important;
+  }
+
+  /* Footer del form */
+  .acc-pane-footer {
+    margin-top: 16px !important;
+  }
+
+}
+
+
+
+
+
+
