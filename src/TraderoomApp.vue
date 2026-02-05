@@ -840,7 +840,7 @@
               <div class="mw-cell mw-symbol-head">Symbol</div>
               <div class="mw-cell">Bid</div>
               <div class="mw-cell">Ask</div>
-              <div class="mw-cell mw-right">Change</div>
+              <div class="mw-cell mw-right">Change %</div>
             </div>
 
             <div class="mw-body">
@@ -882,7 +882,19 @@
                   {{ formatPrice(row.ask, row.symbol) }}
                 </div>
 
-                <div class="mw-cell mw-right mw-change-up">%</div>
+                <div
+                  class="mw-cell mw-right"
+                  :class="
+                    row.change > 0
+                      ? 'mw-change-up'
+                      : row.change < 0
+                      ? 'mw-change-down'
+                      : ''
+                  "
+                >
+                  {{ formatChangePercent(row.change) }}
+                </div>
+
               </div>
 
             </div>
@@ -1842,6 +1854,30 @@ export default {
 
 
   methods: {
+
+    getWatchlistChangePercent(symbol: string): number {
+      const current = this.pricesBySymbol[symbol];
+      const prev = this.prevRealTicksBySymbol[symbol];
+
+      if (!current || !prev) return 0;
+
+      const currBid = Number(current.bid);
+      const prevBid = Number(prev.bid);
+
+      if (!Number.isFinite(currBid) || !Number.isFinite(prevBid) || prevBid === 0) {
+        return 0;
+      }
+
+      return ((currBid - prevBid) / prevBid) * 100;
+    },
+
+    formatChangePercent(value: number | null): string {
+      if (value == null) return '0.00%';
+
+      const sign = value > 0 ? '+' : '';
+      return `${sign}${value.toFixed(2)}%`;
+    },
+
 
     adjustNumber(
       key: 'volume' | 'quickVolume' | 'stopLoss' | 'takeProfit' | 'price' | 'stopLimitPrice',
@@ -5702,13 +5738,15 @@ export default {
       return this.watchlistSymbols.map((symbol: string) => {
         const tick = this.pricesBySymbol[symbol];
         const direction = this.priceDirectionBySymbol[symbol] || 'flat'; // 'up' | 'down' | 'flat'
+        const change = this.getWatchlistChangePercent(symbol);
 
         return {
           symbol,
           bid: tick?.bid ?? '-',
           ask: tick?.ask ?? '-',
           last: tick?.last ?? '-',
-          direction, // 👈 aquí la usamos en el template
+          direction,
+          change, 
         };
       });
     },
