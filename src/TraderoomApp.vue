@@ -737,7 +737,7 @@
 
             <div class="chart-top-banner">
               <div class="btn-row">
-                <button class="fa-btn" @click="toggleMarketForm">
+                <button class="fa-btn" @click="toggleMarketForm" :class="{ 'trading-form--readonly': isInvestor }">
                   <i
                     class="fa-solid fa-object-ungroup dual-icon"
                     :class="{ 'dual-icon--active': showMarketForm }"
@@ -745,13 +745,13 @@
                 </button>
 
 
-                <button class="fa-btn btn-hide" @click="toggleTradingForm">
+                <button class="fa-btn btn-hide" @click="toggleTradingForm" :class="{ 'trading-form--readonly': isInvestor }">
                   <i class="fa-regular fa-clock dual-icon" 
                     :class="{ 'dual-icon--active': showTradingForm }"></i>
                   <span>New order</span>
                 </button>
 
-                <button class="fa-btn btn-hide" @click="toggleWatchlist">
+                <button class="fa-btn btn-hide" @click="toggleWatchlist" :class="{ 'trading-form--readonly': isInvestor }">
                   <i class="fa-solid fa-table-list dual-icon"
                       :class="{ 'dual-icon--active': showWatchlist }"></i>
                 </button>
@@ -1536,7 +1536,7 @@
 
         <button
           class="mbb-item"
-          :class="{ 'mbb-item--active': mobileActiveView === 'trade' && !showMainMenu }"
+          :class="{ 'mbb-item--active': mobileActiveView === 'trade' && !showMainMenu, 'trading-form--readonly': isInvestor}"
           @click="setMobileView('trade')"
         >
           <i class="fa-solid fa-arrow-right-arrow-left"></i>
@@ -1545,7 +1545,7 @@
 
         <button
           class="mbb-item"
-          :class="{ 'mbb-item--active': mobileActiveView === 'markets' && !showMainMenu }"
+          :class="{ 'mbb-item--active': mobileActiveView === 'markets' && !showMainMenu, 'trading-form--readonly': isInvestor}"
           @click="setMobileView('markets')"
         >
           <i class="fa-solid fa-chart-area"></i>
