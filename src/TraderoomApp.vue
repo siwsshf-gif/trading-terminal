@@ -745,13 +745,13 @@
                 </button>
 
 
-                <button class="fa-btn btn-hide" @click="toggleTradingForm" :class="{ 'trading-form--readonly': isInvestor }">
+                <button class="fa-btn btn-hide" @click="toggleTradingForm"> <!-- :class="{ 'trading-form--readonly': isInvestor }" -->
                   <i class="fa-regular fa-clock dual-icon" 
                     :class="{ 'dual-icon--active': showTradingForm }"></i>
                   <span>New order</span>
                 </button>
 
-                <button class="fa-btn btn-hide" @click="toggleWatchlist" :class="{ 'trading-form--readonly': isInvestor }">
+                <button class="fa-btn btn-hide" @click="toggleWatchlist"> <!-- :class="{ 'trading-form--readonly': isInvestor }" -->
                   <i class="fa-solid fa-table-list dual-icon"
                       :class="{ 'dual-icon--active': showWatchlist }"></i>
                 </button>
@@ -1207,7 +1207,7 @@
                       </td>
 
                       <td class="col-price-current">{{ formatPrice(getMarketPriceForPosition(pos), pos.symbol) }}</td>
-                      <td class="col-swap"> {{ pos.swaptext }} </td>
+                      <td class="col-swap"> {{ computeSwapText(pos) }} </td>
                       <td class="col-profit"
                         :class="{
                           'pos-profit-pos': (getOpenPositionProfit(pos) ?? 0) > 0,
@@ -1232,7 +1232,7 @@
                         Free margin: {{ formatMoney(getFreeMargin()) }}&nbsp;&nbsp;
                         Level: {{ getMarginLevel().toFixed(2) }}%
                       </td>
-                      <td class="col-swap"><span v-if="!isInvestor">-441 697.47</span></td>
+                      <td class="col-swap"><span v-if="!isInvestor">{{ formatSwapTotal(getTotalOpenSwap()) }}</span></td>
                       <td class="col-profit pos-profit-neg">{{ formatProfit(getTotalOpenProfit()) }}</td>
                       <td class="col-comment"
                         :class="{
@@ -1612,7 +1612,8 @@ interface Instrument {
   id: string;
   symbol: string;
   symbol_tradingview?: string;
-  // aquí puedes ir añadiendo más campos si quieres tiparlos
+  swap_long?: number | null;
+  swap_short?: number | null;
 }
 
 // =========================================================
@@ -3098,6 +3099,98 @@ export default {
 
 
     /* ==================================================================
+    SWAP CALCULATION
+    Fórmula estándar MT4/MT5: swap = lots × swap_rate × noches
+    El miércoles cuenta x3 (cubre el fin de semana en liquidación T+2).
+    swap_long / swap_short se configuran en Supabase como USD por lote por noche.
+    ================================================================== */
+    // Parsea "2025.12.01 11:49:25" (formato MT5 con puntos).
+    // Si no coincide con ese patrón, intenta new Date() como fallback.
+    parseMT5Date(str: string): Date | null {
+      if (!str) return null;
+      const m = str.match(/^(\d{4})\.(\d{2})\.(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+      if (m) {
+        const d = new Date(
+          Number(m[1]), Number(m[2]) - 1, Number(m[3]),
+          Number(m[4]), Number(m[5]), Number(m[6])
+        );
+        return Number.isFinite(d.getTime()) ? d : null;
+      }
+      const fallback = new Date(str);
+      return Number.isFinite(fallback.getTime()) ? fallback : null;
+    },
+
+    // Devuelve la fecha efectiva para el cálculo de swap:
+    // usa datetext si tiene un string parseable, si no usa opened_at.
+    resolveSwapOpenDate(pos: any): Date | null {
+      if (pos.datetext) {
+        const parsed = this.parseMT5Date(String(pos.datetext));
+        if (parsed) return parsed;
+      }
+      if (pos.opened_at) {
+        const parsed = new Date(pos.opened_at);
+        return Number.isFinite(parsed.getTime()) ? parsed : null;
+      }
+      return null;
+    },
+
+    computeSwapNights(openDate: Date): number {
+      const now = new Date();
+      let nights = 0;
+
+      // Primer rollover: medianoche UTC del día siguiente a la apertura
+      const cursor = new Date(openDate);
+      cursor.setUTCHours(0, 0, 0, 0);
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+
+      while (cursor <= now) {
+        const day = cursor.getUTCDay(); // 0=Dom, 6=Sáb
+        if (day !== 0 && day !== 6) {
+          nights += day === 3 ? 3 : 1; // miércoles = triple swap
+        }
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
+      }
+      return nights;
+    },
+
+    computeSwap(pos: any): number | null {
+      const inst = this.instruments.find(
+        (i: any) => i.id === pos.instrument_id || i.symbol === pos.symbol
+      ) as Instrument | undefined;
+
+      if (!inst) return null;
+
+      const side = (pos.side || '').toLowerCase();
+      const rate = side === 'buy'
+        ? (inst.swap_long ?? null)
+        : (inst.swap_short ?? null);
+
+      if (rate === null || rate === undefined) return null;
+
+      const lots = Number(pos.quantity_lots);
+      if (!Number.isFinite(lots) || lots <= 0) return null;
+
+      const openDate = this.resolveSwapOpenDate(pos);
+      if (!openDate) return null;
+
+      const nights = this.computeSwapNights(openDate);
+      if (nights === 0) return 0;
+
+      return lots * rate * nights;
+    },
+
+    computeSwapText(pos: any): string {
+      const val = this.computeSwap(pos);
+      if (val === null) return pos.swaptext ?? '-';
+      if (val === 0) return '0.00';
+      const sign = val < 0 ? '-' : '';
+      const [intPart, decPart] = Math.abs(val).toFixed(2).split('.');
+      const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return `${sign}${intFormatted}.${decPart}`;
+    },
+
+
+    /* ==================================================================
     OBTENER PRECCIO MARKET - OPEN POSITIONS
     ================================================================== */
     getPositionMarketPrice(pos: any): number | null {
@@ -4220,8 +4313,10 @@ export default {
           digits,
           contract_size,
           spread_min,
-          spread_max
-        `); // 👈 aquí ya viene contract_size
+          spread_max,
+          swap_long,
+          swap_short
+        `);
 
       if (error) {
         console.error(error);
@@ -4545,6 +4640,21 @@ export default {
         const p = this.getOpenPositionProfit(pos)
         return sum + (p ?? 0)
       }, 0)
+    },
+
+    getTotalOpenSwap(): number {
+      if (!this.openPositions || this.openPositions.length === 0) return 0
+      return this.openPositions.reduce((sum: number, pos: any) => {
+        return sum + (this.computeSwap(pos) ?? 0)
+      }, 0)
+    },
+
+    formatSwapTotal(val: number): string {
+      if (val === 0) return '0.00'
+      const sign = val < 0 ? '-' : ''
+      const [intPart, decPart] = Math.abs(val).toFixed(2).split('.')
+      const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+      return `${sign}${intFormatted}.${decPart}`
     },
 
     // Margin total de posiciones abiertas

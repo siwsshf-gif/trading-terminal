@@ -56,16 +56,14 @@ export function connectPriceStream(symbols: string[]): void {
     try {
       const msg = JSON.parse(event.data) as IncomingMessage;
 
-      if (msg.type === 'prices') {
-        // Snapshot inicial
-        msg.data.forEach((tick) => {
+      // El servidor envía type:'price' con data como array (snapshot o tick individual)
+      if (msg.type === 'price' || msg.type === 'prices') {
+        const items: PriceTick[] = Array.isArray(msg.data) ? msg.data : [msg.data];
+        items.forEach((tick) => {
+          if (!tick?.symbol) return;
           prices.set(tick.symbol, tick);
           notifyListeners(tick);
         });
-      } else if (msg.type === 'price') {
-        const tick = msg.data;
-        prices.set(tick.symbol, tick);
-        notifyListeners(tick);
       }
     } catch (err) {
       console.error('[PriceClient] Error parsing WS message:', err);
@@ -73,8 +71,9 @@ export function connectPriceStream(symbols: string[]): void {
   };
 
   ws.onclose = () => {
-    console.warn('[PriceClient] WebSocket cerrado');
+    console.warn('[PriceClient] WebSocket cerrado, reconectando en 4s...');
     ws = null;
+    setTimeout(() => connectPriceStream(requestedSymbols), 4000);
   };
 
   ws.onerror = (err) => {
