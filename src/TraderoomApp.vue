@@ -4470,8 +4470,12 @@ export default {
         console.warn('[WATCHLIST] No se pudo leer la selección guardada:', err);
       }
 
-      // Sin nada guardado válido -> arranca con todo el catálogo.
-      this.watchlistSelected = selection && selection.length ? selection : [...this.watchlistSymbols];
+      // Sin nada guardado válido -> modo AUTO (null): el watchlist mostrará solo
+      // los símbolos que estén recibiendo precio en vivo del engine (ver
+      // effectiveWatchlistSymbols). Así un navegador nuevo (p.ej. producción) no
+      // lista todo el catálogo sin datos. En cuanto el usuario cura desde el
+      // buscador, se materializa a una selección manual persistida en localStorage.
+      this.watchlistSelected = selection && selection.length ? selection : null;
     },
 
     saveWatchlistSelection(): void {
@@ -4498,7 +4502,10 @@ export default {
     toggleWatchlistSymbol(symbol: string): void {
       if (!symbol) return;
       if (this.watchlistSelected === null) {
-        this.watchlistSelected = [...this.watchlistSymbols];
+        // Primera interacción manual estando en modo AUTO: partimos del conjunto
+        // que ya se está mostrando (los que tienen precio en vivo), para que
+        // agregar/quitar sea intuitivo y no aparezca de golpe todo el catálogo.
+        this.watchlistSelected = [...this.effectiveWatchlistSymbols];
       }
 
       const idx = this.watchlistSelected.indexOf(symbol);
@@ -6047,8 +6054,17 @@ export default {
     // usuario. Mientras no se haya inicializado (null) usamos el catálogo completo,
     // de modo que el comportamiento por defecto es idéntico al anterior.
     effectiveWatchlistSymbols(): string[] {
-      if (this.watchlistSelected === null) return this.watchlistSymbols;
       const inCatalog = new Set(this.watchlistSymbols);
+      // MODO AUTO (sin selección manual): solo los símbolos que están recibiendo
+      // precio en vivo del engine (bid/ask válidos). Evita listar todo el catálogo
+      // sin datos en un navegador nuevo (producción).
+      if (this.watchlistSelected === null) {
+        return this.watchlistSymbols.filter((s: string) => {
+          const tick = this.pricesBySymbol[s];
+          return !!tick && tick.bid != null && tick.ask != null;
+        });
+      }
+      // SELECCIÓN MANUAL del usuario (persistida en localStorage).
       // Respeta el orden del catálogo (alfabético) y descarta símbolos inexistentes.
       return this.watchlistSymbols.filter((s: string) =>
         this.watchlistSelected!.includes(s) && inCatalog.has(s)
@@ -6086,7 +6102,7 @@ export default {
     symbolPickerRows() {
       const q = (this.watchlistSearch || '').trim().toLowerCase();
       const selected = new Set(
-        this.watchlistSelected === null ? this.watchlistSymbols : this.watchlistSelected
+        this.watchlistSelected === null ? this.effectiveWatchlistSymbols : this.watchlistSelected
       );
 
       const descBySymbol: Record<string, string> = {};
