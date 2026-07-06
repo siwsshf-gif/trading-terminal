@@ -158,11 +158,11 @@
                     <div class="acc-form-row acc-form-row--two">
                       <div>
                         <label class="acc-label">Name</label>
-                        <input type="text" class="acc-input" placeholder="Nombre">
+                        <input type="text" class="acc-input" placeholder="First name">
                       </div>
                       <div>
                         <label class="acc-label">Surname</label>
-                        <input type="text" class="acc-input" placeholder="Apellido">
+                        <input type="text" class="acc-input" placeholder="Last name">
                       </div>
                     </div>
 
@@ -173,7 +173,7 @@
 
                     <div class="acc-form-row">
                       <label class="acc-label">Phone</label>
-                      <input type="text" class="acc-input" placeholder="Número de teléfono">
+                      <input type="text" class="acc-input" placeholder="Phone number">
                     </div>
 
                     <div class="acc-form-row">
@@ -201,7 +201,7 @@
                         </div>
                       </div>
                       <div class="acc-input-group">
-                        <label class="acc-label">Apalancamiento</label>
+                        <label class="acc-label">Leverage</label>
                         <select class="acc-input">
                           <option>1:10</option>
                           <option>1:20</option>
@@ -619,7 +619,7 @@
                     @click="onClickModify"
                     :disabled="!canClickModify"
                     :class="{ 'ot-btn-disabled': !canClickModify }">
-                    Modificar
+                    Modify
                   </button>
                 </div>
 
@@ -635,7 +635,7 @@
                 <!-- Botón ELIMINAR pending order (solo cuando hay una pending en edición) -->
                 <div class="ot-aw mt-form2" v-if="showDeletePendingButton && editingPendingOrder">
                   <button class="ot-btn ot-btn-close" @click="deletePendingOrder">
-                    Eliminar orden #{{ editingPendingOrder ? editingPendingOrder.ticket : '' }}
+                    Delete order #{{ editingPendingOrder ? editingPendingOrder.ticket : '' }}
                   </button>
                 </div>
 
@@ -804,7 +804,7 @@
 
                   <div class="trade-alert__text">
                     {{ alert.text }}
-                    <!-- pill de 'Terminado' cuando aplique -->
+                    <!-- pill de 'Done' cuando aplique -->
                     <span
                       v-if="alert.status"
                       class="trade-alert__status"
@@ -827,13 +827,65 @@
             <div class="wl-search-bar" :class="{ 'trading-form--readonly': isInvestor }">
               <i class="fa-solid fa-magnifying-glass wl-search-icon"></i>
               <input
+                v-model="watchlistSearch"
                 type="text"
                 class="wl-search-input"
                 placeholder="Search symbol"
+                @focus="openSymbolPicker"
               />
+              <button
+                v-if="watchlistDropdownOpen"
+                type="button"
+                class="wl-search-close"
+                aria-label="Close"
+                @mousedown.prevent
+                @click="closeSymbolPicker"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- ================= PANEL SELECTOR DE SÍMBOLOS ================= -->
+            <!-- Se abre al enfocar el buscador; lista todos los instrumentos de
+                 Supabase con ✓ (en watchlist) o + (agregar). -->
+            <div v-if="watchlistDropdownOpen" class="sym-picker">
+              <div class="sym-picker__head">
+                <span class="sym-picker__title">Symbols</span>
+                <span class="sym-picker__counter">
+                  {{ symbolPickerSelectedCount }}/{{ symbolPickerTotalCount }}
+                </span>
+              </div>
+
+              <div class="sym-picker__body">
+                <div
+                  v-for="item in symbolPickerRows"
+                  :key="item.symbol"
+                  class="sym-row"
+                  :class="{ 'sym-row--on': item.inWatchlist }"
+                  @click="toggleWatchlistSymbol(item.symbol)"
+                >
+                  <div class="sym-row__info">
+                    <div class="sym-row__code">{{ item.symbol }}</div>
+                    <div v-if="item.desc" class="sym-row__desc">{{ item.desc }}</div>
+                  </div>
+
+                  <span class="sym-row__action">
+                    <i
+                      v-if="item.inWatchlist"
+                      class="fa-solid fa-circle-check sym-row__check"
+                    ></i>
+                    <i v-else class="fa-solid fa-plus sym-row__plus"></i>
+                  </span>
+                </div>
+
+                <div v-if="!symbolPickerRows.length" class="sym-picker__empty">
+                  No symbols found
+                </div>
+              </div>
             </div>
 
             <!-- MARKET WATCH -->
+            <template v-else>
 
             <!-- Encabezado -->
             <div class="mw-row mw-header">
@@ -846,7 +898,7 @@
             <div class="mw-body">
 
               <div class="mw-row mw-row-active mw-row2"
-                v-for="row in watchlistRows"
+                v-for="row in filteredWatchlistRows"
                 :key="row.symbol"
                 :class="['watchlist-row', { active: row.symbol === activeInstrumentSymbol }]"
                 @click="onWatchlistRowClick(row.symbol)">
@@ -898,6 +950,8 @@
               </div>
 
             </div>
+
+            </template>
 
           </section>
 
@@ -1780,7 +1834,7 @@ export default {
         volume: null,
         symbol: '',
         price: null,
-        status: 'Terminado',
+        status: 'Done',
       } as {
         ticket: number | string | null;
         side: 'buy' | 'sell' | null;
@@ -1804,6 +1858,11 @@ export default {
       // WATCHLIST SEARCH
       watchlistSearch: '' as string,
       watchlistDropdownOpen: false as boolean,
+
+      // WATCHLIST: subconjunto de símbolos elegidos por el usuario (persistido en localStorage).
+      // Si es null todavía no se inicializó; se rellena en loadWatchlistSymbols().
+      watchlistSelected: null as string[] | null,
+      watchlistSelectionKey: 'watchlist_selected_symbols',
 
       // WATCHLIST: PRECIOS REALES Y SINTÉTICOS
       realTicksBySymbol: {} as Record<string, PriceTick>,   // último tick real por símbolo
@@ -2054,7 +2113,7 @@ export default {
 
         if (subErr) {
           console.error('No se pudo cargar subcuenta:', subErr)
-          this.tradingError = 'No se encontró ninguna cuenta de trading para este usuario.'
+          this.tradingError = 'No trading account found for this user.'
           return
         }
 
@@ -2069,7 +2128,7 @@ export default {
 
         if (instErr) {
           console.error('No se pudo cargar instrumento:', instErr)
-          this.tradingError = 'No se encontró instrumento por defecto (EURUSD).'
+          this.tradingError = 'No default instrument found (EURUSD).'
           return
         }
 
@@ -2082,7 +2141,7 @@ export default {
 
       } catch (err) {
         console.error('Error en loadDefaultTradingContext:', err)
-        this.tradingError = 'Error al cargar el contexto de trading.'
+        this.tradingError = 'Error loading trading context.'
       }
     },
 
@@ -2184,7 +2243,7 @@ export default {
       console.log('activeInstrumentId:', this.activeInstrumentId);
 
       if (!this.currentUser) {
-        this.showFormError('Necesitas iniciar sesión para operar.');
+        this.showFormError('You must be logged in to trade.');
         return;
       }
       if (!this.activeAccountId || !this.activeInstrumentId) {
@@ -2194,7 +2253,7 @@ export default {
           'activeInstrumentId:',
           this.activeInstrumentId
         );
-        this.showFormError('No se encontró cuenta o instrumento activo.');
+        this.showFormError('No active account or instrument found.');
         return;
       }
 
@@ -2206,7 +2265,7 @@ export default {
       );
 
       if (!volume || volume <= 0 || Number.isNaN(volume)) {
-        this.showFormError('Volume inválido.');
+        this.showFormError('Invalid volume.');
         return;
       }
 
@@ -2259,7 +2318,7 @@ export default {
         const executionPrice = side === 'buy' ? tick?.ask : tick?.bid;
 
         if (!executionPrice || !Number.isFinite(executionPrice)) {
-          this.showFormError('No hay precio disponible para este símbolo.');
+          this.showFormError('No price available for this symbol.');
           this.tradingLoading = false;
           return;
         }
@@ -2301,7 +2360,7 @@ export default {
 
         if (orderError) throw orderError;
         if (!order) {
-          throw new Error('No se devolvió la orden creada.');
+          throw new Error('The created order was not returned.');
         }
 
         const createdOrder = order as { id: number | string; ticket: number | string };
@@ -2351,7 +2410,7 @@ export default {
             volume,
             symbol: symbolForUi,
             price: executionPrice,
-            status: 'Terminado',
+            status: 'Done',
           });
         }
       } catch (err: any) {
@@ -2366,7 +2425,7 @@ export default {
         }
 
         const msg =
-          err instanceof Error ? err.message : 'Error al enviar orden de mercado';
+          err instanceof Error ? err.message : 'Error sending market order';
         this.tradingError = msg;
         this.showFormError(msg);
       } finally {
@@ -2383,7 +2442,7 @@ export default {
     ): Promise<void> {
       // 1. Validaciones básicas
       if (!this.currentUser || !this.activeAccountId) {
-        this.showFormError('Necesitas iniciar sesión para operar.');
+        this.showFormError('You must be logged in to trade.');
         return;
       }
 
@@ -2421,7 +2480,7 @@ export default {
 
         if (error) throw error;
         if (!updated) {
-          throw new Error('No se devolvió la posición actualizada.');
+          throw new Error('The updated position was not returned.');
         }
 
         // Tip mínimo para que TS no moleste
@@ -2450,7 +2509,7 @@ export default {
         this.showTradeAlert({
           kind: 'close',
           side: closedPos.side,          // para color azul/rojo
-          status: 'Terminado',
+          status: 'Done',
           title: `${symbol} ${sideLabel}`,
           text: `Close ${sideLabel} ${closedPos.quantity_lots} ${closedPos.avg_entry_price} (#${closedPos.ticket})`,
         });
@@ -2464,7 +2523,7 @@ export default {
             volume: closedPos.quantity_lots,
             symbol,                         // 👈 mismo símbolo que la posición
             price: closedPos.avg_entry_price,
-            status: 'Terminado',
+            status: 'Done',
           });
         }
 
@@ -2473,7 +2532,7 @@ export default {
         const msg =
           err instanceof Error
             ? err.message
-            : 'Error al cerrar posición.';
+            : 'Error closing position.';
         this.tradingError = msg;
         this.showFormError(msg);
       } finally {
@@ -2549,20 +2608,20 @@ export default {
       // ---------- Reglas SL ----------
       if (sl !== null) {
         if (isBuy && sl >= currentPrice - minDistance) {
-          return 'En una COMPRA, el Stop Loss debe estar por DEBAJO del precio actual.';
+          return 'In a BUY, the Stop Loss must be BELOW the current price.';
         }
         if (!isBuy && sl <= currentPrice + minDistance) {
-          return 'En una VENTA, el Stop Loss debe estar por ENCIMA del precio actual.';
+          return 'In a SELL, the Stop Loss must be ABOVE the current price.';
         }
       }
 
       // ---------- Reglas TP ----------
       if (tp !== null) {
         if (isBuy && tp <= currentPrice + minDistance) {
-          return 'En una COMPRA, el Take Profit debe estar por ENCIMA del precio actual.';
+          return 'In a BUY, the Take Profit must be ABOVE the current price.';
         }
         if (!isBuy && tp >= currentPrice - minDistance) {
-          return 'En una VENTA, el Take Profit debe estar por DEBAJO del precio actual.';
+          return 'In a SELL, the Take Profit must be BELOW the current price.';
         }
       }
 
@@ -2575,7 +2634,7 @@ export default {
     VALIDACIÓN: MODIFICAR POSICIÓN ABIERTA (SL / TP)
     ========================================================== */
     validateModifyOpenPosition(position: any | null): string | null {
-      if (!position) return 'No hay posición seleccionada.';
+      if (!position) return 'No position selected.';
 
       const side = position.side;   // 'buy' | 'sell'
       const isBuy = side === 'buy';
@@ -2605,13 +2664,13 @@ export default {
 
       if (sl === slOriginal && tp === tpOriginal && commentNow === commentOriginal) {
         // sin cambios -> consideramos error para que el botón quede deshabilitado
-        return 'No hay cambios para modificar.';
+        return 'No changes to modify.';
       }
 
       // ⬅️ ahora sí usamos la posición para obtener el precio
       const currentPrice = this.getCurrentPriceForValidation(side, position);
       if (!currentPrice || !isFinite(currentPrice)) {
-        return 'No se pudo obtener el precio actual para validar SL/TP.';
+        return 'Could not get the current price to validate SL/TP.';
       }
 
       const minDistance = 0.00010; // luego lo afinamos por símbolo
@@ -2626,20 +2685,20 @@ export default {
       // ---------- Reglas SL ----------
       if (sl !== null) {
         if (isBuy && sl >= currentPrice - minDistance) {
-          return 'En una posición de COMPRA, el Stop Loss debe estar por DEBAJO del precio actual.';
+          return 'In a BUY position, the Stop Loss must be BELOW the current price.';
         }
         if (!isBuy && sl <= currentPrice + minDistance) {
-          return 'En una posición de VENTA, el Stop Loss debe estar por ENCIMA del precio actual.';
+          return 'In a SELL position, the Stop Loss must be ABOVE the current price.';
         }
       }
 
       // ---------- Reglas TP ----------
       if (tp !== null) {
         if (isBuy && tp <= currentPrice + minDistance) {
-          return 'En una posición de COMPRA, el Take Profit debe estar por ENCIMA del precio actual.';
+          return 'In a BUY position, the Take Profit must be ABOVE the current price.';
         }
         if (!isBuy && tp >= currentPrice - minDistance) {
-          return 'En una posición de VENTA, el Take Profit debe estar por DEBAJO del precio actual.';
+          return 'In a SELL position, the Take Profit must be BELOW the current price.';
         }
       }
 
@@ -2724,15 +2783,15 @@ export default {
     ================================================================== */
     async placePendingOrder(side: 'buy' | 'sell'): Promise<void> {
       if (!this.currentUser) {
-        this.showFormError('Necesitas iniciar sesión para operar.');
+        this.showFormError('You must be logged in to trade.');
         return;
       }
       if (!this.activeAccountId || !this.activeInstrumentId) {
-        this.showFormError('No se encontró cuenta o instrumento activo.');
+        this.showFormError('No active account or instrument found.');
         return;
       }
       if (!this.volume || this.volume <= 0) {
-        this.showFormError('Volume inválido.');
+        this.showFormError('Invalid volume.');
         return;
       }
 
@@ -2770,12 +2829,12 @@ export default {
 
         default:
           // Cualquier cosa que no sea pending, avisamos
-          this.showFormError('El tipo de orden actual es market, usa los botones Buy/Sell by Market.');
+          this.showFormError('The current order type is market, use the Buy/Sell by Market buttons.');
           return;
       }
 
       if (!price && !stopPrice) {
-        this.showFormError('Debes especificar el precio de la orden.');
+        this.showFormError('You must specify the order price.');
         return;
       }
 
@@ -2858,13 +2917,13 @@ export default {
             volume: this.volume,
             symbol: symbolForUi,
             price: price || stopPrice,
-            status: 'Terminado',
+            status: 'Done',
           });
         }
 
       } catch (err: any) {
         console.error('Error al enviar orden pendiente:', err);
-        const message: string = err?.message ?? 'Error al enviar orden pendiente';
+        const message: string = err?.message ?? 'Error sending pending order';
         this.tradingError = message;
         this.showFormError(message);
       } finally {
@@ -2878,7 +2937,7 @@ export default {
     ================================================================== */
     async cancelPendingOrder(ord: any): Promise<void> {
       if (!this.currentUser || !this.activeAccountId) {
-        this.showFormError('Necesitas iniciar sesión para operar.');
+        this.showFormError('You must be logged in to trade.');
         return;
       }
 
@@ -2928,7 +2987,7 @@ export default {
           kind: 'cancel',
           side,                     // para color azul/rojo
           sideLabel: typeLabel,     // 👈 buy limit / sell limit / buy stop / sell stop...
-          status: 'Terminado',
+          status: 'Done',
           title: `${symbol} ${typeLabel}`,
           text: `Cancel ${typeLabel} ${ord.quantity_lots} ${ord.price || ord.stop_price || '-'} (#${ord.ticket})`
         });
@@ -2942,14 +3001,14 @@ export default {
             volume: ord.quantity_lots,
             symbol,
             price: ord.price || ord.stop_price || '-',
-            status: 'Terminado'
+            status: 'Done'
           };
           this.showOrderResultPanel = true;
         }
 
       } catch (err: any) {
         console.error('Error al cancelar orden pendiente:', err);
-        const message: string = err?.message ?? 'Error al cancelar orden pendiente.';
+        const message: string = err?.message ?? 'Error canceling pending order.';
         this.tradingError = message;
         this.showFormError(message);
       } finally {
@@ -3401,20 +3460,20 @@ export default {
       // price obligatorio en LIMIT y STOP_LIMIT
       if (!isStop && !isStopLimit) {
         if (price === null) {
-          return 'El precio de entrada es obligatorio.';
+          return 'The entry price is required.';
         }
         if (price <= 0) {
-          return 'El precio de entrada debe ser mayor a 0.';
+          return 'The entry price must be greater than 0.';
         }
       }
 
       if (!this.volume || isNaN(this.volume) || this.volume <= 0) {
-        return 'El volumen debe ser mayor a 0.';
+        return 'The volume must be greater than 0.';
       }
 
       const step = 0.01;
       if (Math.round(this.volume / step) * step !== this.volume) {
-        return `El volumen debe ser múltiplo de ${step}.`;
+        return `The volume must be a multiple of ${step}.`;
       }
 
       // --------- Reglas por tipo ----------
@@ -3422,20 +3481,20 @@ export default {
       // BUY LIMIT: por debajo del mercado
       if (type === 'buy_limit') {
         if (price === null) {
-          return 'El precio de entrada es obligatorio.';
+          return 'The entry price is required.';
         }
         if (price !== null && price >= currentPrice - minDistance) {
-          return 'En una orden Buy Limit, el precio debe estar por DEBAJO del precio actual.';
+          return 'In a Buy Limit order, the price must be BELOW the current price.';
         }
       }
 
       // SELL LIMIT: por encima del mercado
       if (type === 'sell_limit') {
         if (price === null) {
-          return 'El precio de entrada es obligatorio.';
+          return 'The entry price is required.';
         }
         if (price !== null && price <= currentPrice + minDistance) {
-          return 'En una orden Sell Limit, el precio debe estar por ENCIMA del precio actual.';
+          return 'In a Sell Limit order, the price must be ABOVE the current price.';
         }
       }
 
@@ -3444,10 +3503,10 @@ export default {
       if (type === 'buy_stop') {
         const trigger = normalizeRequired(this.price);
         if (trigger === null) {
-          return 'El precio de activación es obligatorio en una orden Buy Stop.';
+          return 'The activation price is required for a Buy Stop order.';
         }
         if (trigger <= currentPrice + minDistance) {
-          return 'En una orden Buy Stop, el precio debe estar por ENCIMA del precio actual.';
+          return 'In a Buy Stop order, the price must be ABOVE the current price.';
         }
       }
 
@@ -3455,10 +3514,10 @@ export default {
       if (type === 'sell_stop') {
         const trigger = normalizeRequired(this.price);
         if (trigger === null) {
-          return 'El precio de activación es obligatorio en una orden Sell Stop.';
+          return 'The activation price is required for a Sell Stop order.';
         }
         if (trigger >= currentPrice - minDistance) {
-          return 'En una orden Sell Stop, el precio debe estar por DEBAJO del precio actual.';
+          return 'In a Sell Stop order, the price must be BELOW the current price.';
         }
       }
 
@@ -3468,27 +3527,27 @@ export default {
         const limitPrice = normalizeRequired(this.stopLimitPrice);
 
         if (trigger === null) {
-          return 'El precio de activación es obligatorio en una orden Stop Limit.';
+          return 'The activation price is required for a Stop Limit order.';
         }
         if (limitPrice === null) {
-          return 'En una orden Stop Limit, el campo "Stop Limit Price" es obligatorio.';
+          return 'In a Stop Limit order, the "Stop Limit Price" field is required.';
         }
 
         if (type === 'buy_stop_limit') {
           if (trigger <= currentPrice + minDistance) {
-            return 'En una orden Buy Stop Limit, el precio debe estar por ENCIMA del precio actual.';
+            return 'In a Buy Stop Limit order, the price must be ABOVE the current price.';
           }
           if (limitPrice > trigger) {
-            return 'En Buy Stop Limit, el Stop Limit Price debe ser menor o igual al precio de activación.';
+            return 'In Buy Stop Limit, the Stop Limit Price must be less than or equal to the activation price.';
           }
         }
 
         if (type === 'sell_stop_limit') {
           if (trigger >= currentPrice - minDistance) {
-            return 'En una orden Sell Stop Limit, el precio debe estar por DEBAJO del precio actual.';
+            return 'In a Sell Stop Limit order, the price must be BELOW the current price.';
           }
           if (limitPrice < trigger) {
-            return 'En Sell Stop Limit, el Stop Limit Price debe ser mayor o igual al precio de activación.';
+            return 'In Sell Stop Limit, the Stop Limit Price must be greater than or equal to the activation price.';
           }
         }
       }
@@ -3507,19 +3566,19 @@ export default {
       if (entryPrice !== null) {
         if (sl !== null) {
           if (isBuy && sl >= entryPrice - minDistance) {
-            return 'En una orden de compra, el Stop Loss debe estar por DEBAJO del precio de entrada.';
+            return 'In a buy order, the Stop Loss must be BELOW the entry price.';
           }
           if (!isBuy && sl <= entryPrice + minDistance) {
-            return 'En una orden de venta, el Stop Loss debe estar por ENCIMA del precio de entrada.';
+            return 'In a sell order, the Stop Loss must be ABOVE the entry price.';
           }
         }
 
         if (tp !== null) {
           if (isBuy && tp <= entryPrice + minDistance) {
-            return 'En una orden de compra, el Take Profit debe estar por ENCIMA del precio de entrada.';
+            return 'In a buy order, the Take Profit must be ABOVE the entry price.';
           }
           if (!isBuy && tp >= entryPrice - minDistance) {
-            return 'En una orden de venta, el Take Profit debe estar por DEBAJO del precio de entrada.';
+            return 'In a sell order, the Take Profit must be BELOW the entry price.';
           }
         }
       }
@@ -3533,11 +3592,11 @@ export default {
     ================================================================== */
     async modifyPosition(): Promise<void> {
       if (!this.currentUser) {
-        this.showFormError('Necesitas iniciar sesión para modificar la posición.');
+        this.showFormError('You must be logged in to modify the position.');
         return;
       }
       if (!this.editingPosition) {
-        this.showFormError('No hay posición seleccionada para modificar.');
+        this.showFormError('No position selected to modify.');
         return;
       }
 
@@ -3579,7 +3638,7 @@ export default {
           .single();
 
         if (updateError) throw updateError;
-        if (!updated) throw new Error('No se devolvió la posición actualizada.');
+        if (!updated) throw new Error('The updated position was not returned.');
 
         console.log('Posición modificada OK:', updated);
 
@@ -3601,7 +3660,7 @@ export default {
           sideLabel,
           title: `${symbol} ${sideLabel}`,
           text: `Modify SL/TP ${updated.quantity_lots} @ ${updated.avg_entry_price} (#${updated.ticket})`,
-          status: 'Terminado',
+          status: 'Done',
         });
 
         // 🧱 PANEL RESULTADO dentro del trading-form
@@ -3613,13 +3672,13 @@ export default {
             volume: updated.quantity_lots,
             symbol,
             price: updated.avg_entry_price,
-            status: 'Terminado',
+            status: 'Done',
           });
         }
 
       } catch (err: any) {
         console.error('Error al modificar posición:', err);
-        this.tradingError = err.message ?? 'Error al modificar posición';
+        this.tradingError = err.message ?? 'Error modifying position';
 
         // 🔥 FIX TYPESCRIPT — forzar string
         this.showFormError(String(this.tradingError));
@@ -3646,7 +3705,7 @@ export default {
       }
 
       // Fallback por si acaso
-      this.showFormError('No hay nada seleccionado para modificar.');
+      this.showFormError('Nothing selected to modify.');
     },
 
 
@@ -3655,11 +3714,11 @@ export default {
     ================================================================== */
     async modifyPendingOrder(): Promise<void> {
       if (!this.currentUser) {
-        this.showFormError('Necesitas iniciar sesión para modificar la orden.');
+        this.showFormError('You must be logged in to modify the order.');
         return;
       }
       if (!this.editingPendingOrder) {
-        this.showFormError('No hay orden pendiente seleccionada para modificar.');
+        this.showFormError('No pending order selected to modify.');
         return;
       }
 
@@ -3740,7 +3799,7 @@ export default {
           sideLabel: typeLabel,
           title: `${symbol} ${typeLabel}`,
           text: `Modify ${typeLabel} ${updated.quantity_lots} ${updated.price || updated.stop_price || '-'} (#${updated.ticket})`,
-          status: 'Terminado',
+          status: 'Done',
         });
 
         // 🧱 PANEL RESULTADO dentro del trading-form
@@ -3752,13 +3811,13 @@ export default {
             volume: updated.quantity_lots,
             symbol,
             price: updated.price || updated.stop_price || '-',
-            status: 'Terminado',
+            status: 'Done',
           });
         }
 
       } catch (err: any) {
         console.error('Error al modificar pending order:', err);
-        this.tradingError = err.message ?? 'Error al modificar la orden pendiente.';
+        this.tradingError = err.message ?? 'Error modifying pending order.';
 
         // 🔥 FIX TS: asegurar string
         this.showFormError(String(this.tradingError));
@@ -3770,7 +3829,7 @@ export default {
 
     async closeEditingPosition(): Promise<void> {
       if (!this.editingPosition) {
-        this.showFormError('No hay posición seleccionada para cerrar.');
+        this.showFormError('No position selected to close.');
         return;
       }
 
@@ -3784,7 +3843,7 @@ export default {
 
     async deletePendingOrder(): Promise<void> {
       if (!this.editingPendingOrder) {
-        this.showFormError('No hay orden pendiente seleccionada para eliminar.');
+        this.showFormError('No pending order selected to delete.');
         return;
       }
 
@@ -3816,7 +3875,7 @@ export default {
     ================================================================== */
     async clearPositionSL(pos: any): Promise<void> {
       if (!this.currentUser || !this.activeAccountId) {
-        this.showFormError('Necesitas iniciar sesión para modificar la posición.');
+        this.showFormError('You must be logged in to modify the position.');
         return;
       }
       if (!pos || !pos.id) return;
@@ -3854,7 +3913,7 @@ export default {
           sideLabel,
           title: `${symbol} ${sideLabel}`,
           text: `Remove SL ${updated.quantity_lots} @ ${updated.avg_entry_price} (#${updated.ticket})`,
-          status: 'Terminado',
+          status: 'Done',
         });
 
       } catch (err: any) {
@@ -3870,7 +3929,7 @@ export default {
 
     async clearPositionTP(pos: any): Promise<void> {
       if (!this.currentUser || !this.activeAccountId) {
-        this.showFormError('Necesitas iniciar sesión para modificar la posición.');
+        this.showFormError('You must be logged in to modify the position.');
         return;
       }
       if (!pos || !pos.id) return;
@@ -3908,7 +3967,7 @@ export default {
           sideLabel,
           title: `${symbol} ${sideLabel}`,
           text: `Remove TP ${updated.quantity_lots} @ ${updated.avg_entry_price} (#${updated.ticket})`,
-          status: 'Terminado',
+          status: 'Done',
         });
 
       } catch (err: any) {
@@ -3992,7 +4051,7 @@ export default {
         volume: data.volume,
         symbol: data.symbol,
         price: data.price,
-        status: data.status || 'Terminado',
+        status: data.status || 'Done',
       };
       this.showOrderResultPanel = true;
     },
@@ -4373,6 +4432,9 @@ export default {
           .map((row: any) => row.symbol)
           .filter((s: string | null) => !!s);
 
+        // Inicializa el subconjunto seleccionado del watchlist (localStorage o todos).
+        this.initWatchlistSelection();
+
         if (this.watchlistSymbols.length > 0) {
           this.initPriceEngine();
         } else {
@@ -4381,6 +4443,72 @@ export default {
       } catch (err) {
         console.error('Error al cargar símbolos del watchlist:', err);
       }
+    },
+
+
+    /* ==================================================================
+    WATCHLIST – SELECCIÓN DE SÍMBOLOS (panel buscador + persistencia)
+    ================================================================== */
+    // Carga desde localStorage qué símbolos están en el watchlist. Por defecto:
+    // todos los del catálogo (mismo comportamiento que antes de esta feature).
+    initWatchlistSelection(): void {
+      const catalog = new Set(this.watchlistSymbols);
+      let selection: string[] | null = null;
+
+      try {
+        const raw = localStorage.getItem(this.watchlistSelectionKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            // Solo conserva símbolos que aún existen en el catálogo.
+            selection = parsed.filter(
+              (s: unknown): s is string => typeof s === 'string' && catalog.has(s)
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('[WATCHLIST] No se pudo leer la selección guardada:', err);
+      }
+
+      // Sin nada guardado válido -> arranca con todo el catálogo.
+      this.watchlistSelected = selection && selection.length ? selection : [...this.watchlistSymbols];
+    },
+
+    saveWatchlistSelection(): void {
+      try {
+        localStorage.setItem(
+          this.watchlistSelectionKey,
+          JSON.stringify(this.watchlistSelected || [])
+        );
+      } catch (err) {
+        console.warn('[WATCHLIST] No se pudo guardar la selección:', err);
+      }
+    },
+
+    openSymbolPicker(): void {
+      this.watchlistDropdownOpen = true;
+    },
+
+    closeSymbolPicker(): void {
+      this.watchlistDropdownOpen = false;
+      this.watchlistSearch = '';
+    },
+
+    // Agrega o quita un símbolo del watchlist desde el panel selector.
+    toggleWatchlistSymbol(symbol: string): void {
+      if (!symbol) return;
+      if (this.watchlistSelected === null) {
+        this.watchlistSelected = [...this.watchlistSymbols];
+      }
+
+      const idx = this.watchlistSelected.indexOf(symbol);
+      if (idx >= 0) {
+        this.watchlistSelected.splice(idx, 1);
+      } else if (this.watchlistSymbols.includes(symbol)) {
+        this.watchlistSelected.push(symbol);
+      }
+
+      this.saveWatchlistSelection();
     },
 
 
@@ -4608,6 +4736,44 @@ export default {
     },
 
 
+    /* ==================================================================
+    Garantiza que el trading form SIEMPRE tenga un instrumento activo:
+    - el primer símbolo del watchlist si hay alguno
+    - EURUSD por defecto si el watchlist está vacío (solo con allowFallback)
+
+    Es idempotente y resistente al orden de carga:
+    - fija el SÍMBOLO en cuanto hay filas en el watchlist
+    - resuelve el ID en cuanto están cargados los instrumentos
+    No pisa una selección ya existente del usuario.
+    ================================================================== */
+    ensureDefaultActiveInstrument(allowFallback: boolean = false): void {
+      // 1) Elegir símbolo activo si todavía no hay ninguno
+      if (!this.activeInstrumentSymbol) {
+        const rows = this.watchlistRows;
+
+        if (rows && rows.length) {
+          this.activeInstrumentSymbol = rows[0].symbol;
+        } else if (allowFallback) {
+          this.activeInstrumentSymbol = 'EURUSD';
+        } else {
+          // Aún no hay datos del watchlist: esperar a que carguen (lo reintenta un watcher)
+          return;
+        }
+
+        this.syncTradingFormPrice(this.activeInstrumentSymbol);
+      }
+
+      // 2) Resolver el instrument_id en cuanto haya instrumentos cargados
+      //    (necesario para operar; su ausencia es lo que pedía "elija uno")
+      if (!this.activeInstrumentId && this.activeInstrumentSymbol && this.instruments?.length) {
+        const inst = this.instruments.find(
+          (i: any) => i.symbol === this.activeInstrumentSymbol
+        );
+        if (inst) this.activeInstrumentId = inst.id;
+      }
+    },
+
+
 
     /* ==================================================================
     =====================================================================
@@ -4763,7 +4929,7 @@ export default {
       } catch (err: any) {
         console.error('Error al cargar posiciones abiertas:', err);
         this.openPositionsError =
-          err.message ?? 'Error al cargar posiciones abiertas';
+          err.message ?? 'Error loading open positions';
       } finally {
         this.openPositionsLoading = false;
       }
@@ -4817,7 +4983,7 @@ export default {
       } catch (err: any) {
         console.error('Error al cargar órdenes pendientes:', err);
         this.pendingOrdersError =
-          err.message ?? 'No se pudieron cargar las órdenes pendientes.';
+          err.message ?? 'Could not load pending orders.';
       } finally {
         this.pendingOrdersLoading = false;
       }
@@ -4994,10 +5160,32 @@ export default {
         this.historyRows = rows;
       } catch (err: any) {
         console.error('Error al cargar history:', err);
-        this.historyError = 'No se pudo cargar el historial.';
+        this.historyError = 'Could not load history.';
       } finally {
         this.historyLoading = false;
       }
+    },
+
+
+    /* ==================================================================
+    Helper: trae TODAS las filas de una query paginando de 1000 en 1000.
+    Supabase corta cada consulta en ~1000 filas; sin esto, los totales del
+    resumen (y cualquier suma) quedan incompletos cuando hay más de 1000
+    posiciones. buildQuery() debe devolver una query nueva (filtros aplicados).
+    ================================================================== */
+    async fetchAllRows(buildQuery: () => any, pageSize: number = 1000): Promise<any[]> {
+      const all: any[] = [];
+      let from = 0;
+      // tope de seguridad para nunca quedar en loop infinito
+      for (let guard = 0; guard < 1000; guard++) {
+        const { data, error } = await buildQuery().range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = data || [];
+        all.push(...rows);
+        if (rows.length < pageSize) break;   // última página
+        from += pageSize;
+      }
+      return all;
     },
 
 
@@ -5018,26 +5206,26 @@ export default {
       const n = (v: any) => (v == null ? 0 : Number(v) || 0);
 
       try {
-        // 1️⃣ POSITIONS cerradas → profit real de trading
-        const { data: posData, error: posErr } = await supabase
-          .from('positions')
-          .select('pnl_closed, swap_accrued, commission_accrued')
-          .eq('account_id', this.activeAccountId)
-          .eq('status', 'closed');
-
-        if (posErr) throw posErr;
+        // 1️⃣ POSITIONS cerradas → profit real de trading (TODAS, paginado)
+        const posData = await this.fetchAllRows(() =>
+          supabase
+            .from('positions')
+            .select('pnl_closed, swap_accrued, commission_accrued')
+            .eq('account_id', this.activeAccountId)
+            .eq('status', 'closed')
+        );
 
         const profit = (posData || []).reduce((a, r) => a + n(r.pnl_closed), 0);
         const swap   = (posData || []).reduce((a, r) => a + n(r.swap_accrued), 0);
         const fee    = (posData || []).reduce((a, r) => a + n(r.commission_accrued), 0);
 
-        // 2️⃣ LEDGER → solo movimientos de dinero
-        const { data: ledData, error: ledErr } = await supabase
-          .from('account_ledger')
-          .select('type, amount')
-          .eq('sub_account_id', this.activeAccountId);
-
-        if (ledErr) throw ledErr;
+        // 2️⃣ LEDGER → solo movimientos de dinero (TODAS, paginado)
+        const ledData = await this.fetchAllRows(() =>
+          supabase
+            .from('account_ledger')
+            .select('type, amount')
+            .eq('sub_account_id', this.activeAccountId)
+        );
 
         const sumLedger = (t: string) =>
           (ledData || [])
@@ -5150,7 +5338,7 @@ export default {
         if (error) throw error;
 
         console.log('SignUp OK:', data);
-        alert('Revisa tu correo para confirmar la cuenta (si lo tienes activado en Supabase).');
+        alert('Check your email to confirm your account (if enabled in Supabase).');
 
       } catch (err: any) {
         console.error('Error signUp:', err);
@@ -5190,6 +5378,9 @@ export default {
         await this.loadInstruments();
         await this.loadWatchlistSymbols();     // <-- esto llama initPriceEngine() por dentro
         await this.preloadQuotesFromSupabase();
+
+        // Asegura instrumento activo: primer símbolo del watchlist o EURUSD por defecto
+        this.ensureDefaultActiveInstrument(true);
 
         // ✅ CLAVE: asegurar que el "jitter" corre aunque entres por login y no por reload
         if (!this.priceAnimationIntervalId) {
@@ -5742,13 +5933,21 @@ export default {
       }
     },
 
+    // Fija el símbolo activo (primer símbolo del watchlist) en cuanto el
+    // watchlist tiene filas, sin importar el orden de carga.
     watchlistRows: {
       immediate: true,
-      handler(rows) {
-        if (!this.activeInstrumentSymbol && rows.length) {
-          this.activeInstrumentSymbol = rows[0].symbol;
-          this.syncTradingFormPrice(rows[0].symbol);
-        }
+      handler() {
+        this.ensureDefaultActiveInstrument(false);
+      }
+    },
+
+    // Cuando llegan los instrumentos, resuelve el instrument_id del símbolo
+    // activo si aún faltaba (evita el "elija uno" al operar).
+    instruments: {
+      immediate: true,
+      handler() {
+        this.ensureDefaultActiveInstrument(false);
       }
     },
 
@@ -5844,8 +6043,20 @@ export default {
     /* =========================================================
     SUPABASE - WATCHLIST
     ========================================================= */
+    // Símbolos que se muestran en el watchlist: el subconjunto elegido por el
+    // usuario. Mientras no se haya inicializado (null) usamos el catálogo completo,
+    // de modo que el comportamiento por defecto es idéntico al anterior.
+    effectiveWatchlistSymbols(): string[] {
+      if (this.watchlistSelected === null) return this.watchlistSymbols;
+      const inCatalog = new Set(this.watchlistSymbols);
+      // Respeta el orden del catálogo (alfabético) y descarta símbolos inexistentes.
+      return this.watchlistSymbols.filter((s: string) =>
+        this.watchlistSelected!.includes(s) && inCatalog.has(s)
+      );
+    },
+
     watchlistRows() {
-      return this.watchlistSymbols.map((symbol: string) => {
+      return this.effectiveWatchlistSymbols.map((symbol: string) => {
         const tick = this.pricesBySymbol[symbol];
         const direction = this.priceDirectionBySymbol[symbol] || 'flat'; // 'up' | 'down' | 'flat'
         const change = this.getWatchlistChangePercent(symbol);
@@ -5856,9 +6067,55 @@ export default {
           ask: tick?.ask ?? '-',
           last: tick?.last ?? '-',
           direction,
-          change, 
+          change,
         };
       });
+    },
+
+    // Filas del watchlist filtradas por el buscador "Search symbol"
+    filteredWatchlistRows() {
+      const q = (this.watchlistSearch || '').trim().toLowerCase();
+      if (!q) return this.watchlistRows;
+      return this.watchlistRows.filter((row: { symbol: string }) =>
+        String(row.symbol).toLowerCase().includes(q)
+      );
+    },
+
+    // Filas del panel selector de símbolos (todos los instrumentos de Supabase),
+    // filtradas por el buscador. Cada fila indica si el símbolo ya está en el watchlist.
+    symbolPickerRows() {
+      const q = (this.watchlistSearch || '').trim().toLowerCase();
+      const selected = new Set(
+        this.watchlistSelected === null ? this.watchlistSymbols : this.watchlistSelected
+      );
+
+      const descBySymbol: Record<string, string> = {};
+      (this.instruments || []).forEach((inst: any) => {
+        if (inst && inst.symbol) {
+          descBySymbol[inst.symbol] = inst.symbol_tradingview || '';
+        }
+      });
+
+      return this.watchlistSymbols
+        .filter((symbol: string) => {
+          if (!q) return true;
+          const desc = (descBySymbol[symbol] || '').toLowerCase();
+          return symbol.toLowerCase().includes(q) || desc.includes(q);
+        })
+        .map((symbol: string) => ({
+          symbol,
+          desc: descBySymbol[symbol] || '',
+          inWatchlist: selected.has(symbol),
+        }));
+    },
+
+    // Contadores para el encabezado del panel (seleccionados / total del catálogo).
+    symbolPickerSelectedCount(): number {
+      return this.effectiveWatchlistSymbols.length;
+    },
+
+    symbolPickerTotalCount(): number {
+      return this.watchlistSymbols.length;
     },
 
 
@@ -6064,6 +6321,9 @@ export default {
       await this.loadInstruments();
 
     }
+
+    // Asegura instrumento activo: primer símbolo del watchlist o EURUSD por defecto
+    this.ensureDefaultActiveInstrument(true);
 
     // 👉 AHORA SÍ, la app está lista
     this.authReady = true;
