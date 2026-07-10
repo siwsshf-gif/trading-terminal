@@ -1890,6 +1890,16 @@ SYMBOL PICKER (panel de búsqueda de símbolos)
   color: var(--c-buy);
 }
 
+/* 🕒 Fila del watchlist con mercado CERRADO: todo en gris, sin cotizar.
+   Anula los colores up/down de bid/ask/cambio e iconos. */
+.mw-row--closed .mw-cell,
+.mw-row--closed .mw-symbol span,
+.mw-row--closed .mw-icon-up,
+.mw-row--closed .mw-icon-down,
+.mw-row--closed .mw-icon-neutral {
+  color: #6b7280 !important;   /* gris apagado */
+}
+
 
 
 /* =================================================================

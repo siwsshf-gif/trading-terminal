@@ -700,7 +700,7 @@
 
           <section id="chart" class="chart mobile-section" v-show="isMobile ? mobileActiveView === 'chart' : true">
 
-            <div class="chart-top-left-box" v-if="showMarketForm" :class="{ 'trading-form--readonly': isInvestor }">
+            <div class="chart-top-left-box" v-if="showMarketForm">
                 <span class="symbol-name"></span>
                 <!-- QUICK FORM (como la imagen 1) -->
                 <div class="tf-quick-row">
@@ -745,7 +745,7 @@
 
             <div class="chart-top-banner">
               <div class="btn-row">
-                <button class="fa-btn" @click="toggleMarketForm" :class="{ 'trading-form--readonly': isInvestor }">
+                <button class="fa-btn" @click="toggleMarketForm">
                   <i
                     class="fa-solid fa-object-ungroup dual-icon"
                     :class="{ 'dual-icon--active': showMarketForm }"
@@ -832,7 +832,7 @@
             <div ref="handleLeft" class="resize-handle resize-handle-left"></div>
 
             <!-- Search bar -->
-            <div class="wl-search-bar" :class="{ 'trading-form--readonly': isInvestor }">
+            <div class="wl-search-bar">
               <i class="fa-solid fa-magnifying-glass wl-search-icon"></i>
               <input
                 v-model="watchlistSearch"
@@ -908,13 +908,15 @@
               <div class="mw-row mw-row-active mw-row2"
                 v-for="row in filteredWatchlistRows"
                 :key="row.symbol"
-                :class="['watchlist-row', { active: row.symbol === activeInstrumentSymbol }]"
+                :class="['watchlist-row', { active: row.symbol === activeInstrumentSymbol, 'mw-row--closed': row.closed }]"
                 @click="onWatchlistRowClick(row.symbol)">
 
                 <div class="mw-cell mw-symbol">
                   <i class="fa-solid"
                     :class="
-                      row.direction === 'up'
+                      row.closed
+                        ? 'fa-circle-dot mw-icon-neutral'
+                        : row.direction === 'up'
                         ? 'fa-caret-up mw-icon-up'
                         : row.direction === 'down'
                         ? 'fa-caret-down mw-icon-down'
@@ -1299,7 +1301,7 @@
                         Free margin: {{ formatMoney(getFreeMargin()) }}&nbsp;&nbsp;
                         Level: {{ getMarginLevel().toFixed(2) }}%
                       </td>
-                      <td class="col-swap"><span v-if="!isInvestor">{{ formatSwapTotal(getTotalOpenSwap()) }}</span></td>
+                      <td class="col-swap"><span>{{ formatSwapTotal(getTotalOpenSwap()) }}</span></td>
                       <td class="col-profit pos-profit-neg">{{ formatProfit(getTotalOpenProfit()) }}</td>
                       <td class="col-comment"
                         :class="{
@@ -1603,7 +1605,7 @@
 
         <button
           class="mbb-item"
-          :class="{ 'mbb-item--active': mobileActiveView === 'trade' && !showMainMenu, 'trading-form--readonly': isInvestor}"
+          :class="{ 'mbb-item--active': mobileActiveView === 'trade' && !showMainMenu}"
           @click="setMobileView('trade')"
         >
           <i class="fa-solid fa-arrow-right-arrow-left"></i>
@@ -1612,7 +1614,7 @@
 
         <button
           class="mbb-item"
-          :class="{ 'mbb-item--active': mobileActiveView === 'markets' && !showMainMenu, 'trading-form--readonly': isInvestor}"
+          :class="{ 'mbb-item--active': mobileActiveView === 'markets' && !showMainMenu}"
           @click="setMobileView('markets')"
         >
           <i class="fa-solid fa-chart-area"></i>
@@ -4274,6 +4276,12 @@ export default {
           if (!tick || !tick.symbol) return;
 
           const symbol = tick.symbol;
+
+          // 🕒 Mercado cerrado para este símbolo (fin de semana o break diario):
+          // ignoramos los ticks reales que el servidor siga enviando, para que el
+          // precio visible quede congelado en el último valor con mercado abierto.
+          if (!this.isSymbolTradable(symbol, new Date())) return;
+
           const prev = this.realTicksBySymbol[symbol] || null;
 
           // Guardar penúltimo y último tick REALES
@@ -6303,10 +6311,13 @@ export default {
     },
 
     watchlistRows() {
+      // marketNowTs como dep reactiva: refresca el estado abierto/cerrado cada seg.
+      const nowTs = this.marketNowTs;
       return this.effectiveWatchlistSymbols.map((symbol: string) => {
         const tick = this.pricesBySymbol[symbol];
         const direction = this.priceDirectionBySymbol[symbol] || 'flat'; // 'up' | 'down' | 'flat'
         const change = this.getWatchlistChangePercent(symbol);
+        const closed = !this.isSymbolTradable(symbol, new Date(nowTs));
 
         return {
           symbol,
@@ -6315,6 +6326,7 @@ export default {
           last: tick?.last ?? '-',
           direction,
           change,
+          closed,
         };
       });
     },
