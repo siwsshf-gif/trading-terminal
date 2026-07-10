@@ -549,7 +549,7 @@
                 </div>
 
                 <!-- 🕒 Aviso de mercado cerrado (bloquea abrir operaciones) -->
-                <div v-if="!isActiveMarketOpen" class="ot-form-error" style="margin-bottom: 8px;">
+                <div v-if="!isActiveMarketOpen" class="ot-form-error">
                   Market closed — trading is not available
                 </div>
 
