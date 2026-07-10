@@ -4520,10 +4520,69 @@ export default {
 
 
     /* ==================================================================
+    Horario de mercado (America/Mexico_City)
+    ------------------------------------------------------------------
+    CERRADO: viernes 15:00 -> domingo 16:00 (inclusive).
+    ABIERTO: domingo 16:01 -> viernes 14:59.
+    Se calcula la hora local de Ciudad de México con Intl para no
+    depender de un offset hardcodeado. Si por lo que sea el cálculo
+    falla, devolvemos true (mercado abierto) para no congelar de más.
+    ================================================================== */
+    isMarketOpen(now: Date = new Date()): boolean {
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/Mexico_City',
+          weekday: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).formatToParts(now);
+
+        const get = (type: string) =>
+          parts.find((p) => p.type === type)?.value ?? '';
+
+        const weekdayMap: Record<string, number> = {
+          Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+        };
+
+        const day = weekdayMap[get('weekday')];
+        if (day == null) return true; // no pudimos determinar el día -> abierto
+
+        // '24' a medianoche en algunos entornos -> normalizar a 0
+        let hour = parseInt(get('hour'), 10);
+        if (hour === 24) hour = 0;
+        const minute = parseInt(get('minute'), 10);
+
+        if (!Number.isFinite(hour) || !Number.isFinite(minute)) return true;
+
+        const minutesOfDay = hour * 60 + minute;
+
+        const FRI_CLOSE = 15 * 60;      // viernes 15:00
+        const SUN_OPEN = 16 * 60 + 1;   // domingo 16:01
+
+        // Sábado: cerrado todo el día
+        if (day === 6) return false;
+        // Viernes: cerrado a partir de las 15:00
+        if (day === 5 && minutesOfDay >= FRI_CLOSE) return false;
+        // Domingo: cerrado hasta las 16:00 (abre 16:01)
+        if (day === 0 && minutesOfDay < SUN_OPEN) return false;
+
+        return true;
+      } catch (err) {
+        console.warn('[Watchlist] isMarketOpen fallo, asumiendo mercado abierto:', err);
+        return true;
+      }
+    },
+
+
+    /* ==================================================================
     Método helper para obtener el precio “de mercado” de la posición
     ================================================================== */
     animatePricesStep(): void {
       console.log('[Watchlist] animatePricesStep tick');
+
+      // 🕒 Mercado cerrado (fin de semana Mexico City): congelamos precios.
+      if (!this.isMarketOpen()) return;
 
       if (!this.watchlistSymbols || !this.watchlistSymbols.length) return;
 
