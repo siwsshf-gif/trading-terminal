@@ -550,7 +550,7 @@
 
                 <!-- 🕒 Aviso de mercado cerrado (bloquea abrir operaciones) -->
                 <div v-if="!isActiveMarketOpen" class="ot-form-error" style="margin-bottom: 8px;">
-                  Mercado cerrado — no se pueden abrir operaciones
+                  Market closed — trading is not available
                 </div>
 
                 <div v-show="showSellBuyMarket" class="mt-form">
@@ -2277,7 +2277,7 @@ export default {
         this.activeInstrumentSymbol &&
         !this.isSymbolTradable(this.activeInstrumentSymbol, new Date())
       ) {
-        this.showFormError('Mercado cerrado: no se pueden abrir operaciones ahora.');
+        this.showFormError('Market closed: you cannot open trades right now.');
         return;
       }
 
@@ -2479,7 +2479,7 @@ export default {
       // Se evalúa con el símbolo de la propia posición.
       const posSymbol = pos.symbol || this.activeInstrumentSymbol || null;
       if (posSymbol && !this.isSymbolTradable(posSymbol, new Date())) {
-        this.showFormError('Mercado cerrado: no se puede cerrar la posición ahora.');
+        this.showFormError('Market closed: you cannot close the position right now.');
         return;
       }
 
@@ -2827,7 +2827,7 @@ export default {
         this.activeInstrumentSymbol &&
         !this.isSymbolTradable(this.activeInstrumentSymbol, new Date())
       ) {
-        this.showFormError('Mercado cerrado: no se pueden crear órdenes ahora.');
+        this.showFormError('Market closed: you cannot place orders right now.');
         return;
       }
       if (!this.volume || this.volume <= 0) {
@@ -6374,7 +6374,7 @@ export default {
       if (!this.showTradingForm) return null;
       if (this.editingPosition || this.editingPendingOrder) return null;
       // 🕒 Mercado cerrado: no se pueden abrir operaciones nuevas
-      if (!this.isActiveMarketOpen) return 'Mercado cerrado';
+      if (!this.isActiveMarketOpen) return 'Market closed';
       if (this.orderType !== 'market') return null;
 
       return this.validateNewMarketSlTp('buy');
@@ -6385,7 +6385,7 @@ export default {
       if (!this.showTradingForm) return null;
       if (this.editingPosition || this.editingPendingOrder) return null;
       // 🕒 Mercado cerrado: no se pueden abrir operaciones nuevas
-      if (!this.isActiveMarketOpen) return 'Mercado cerrado';
+      if (!this.isActiveMarketOpen) return 'Market closed';
       if (this.orderType !== 'market') return null;
 
       return this.validateNewMarketSlTp('sell');
