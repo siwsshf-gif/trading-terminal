@@ -630,7 +630,10 @@
 
                 <!-- Botón CLOSE de posición abierta -->
                 <div class="ot-aw mt-form2" v-show="showClosePositionButton">
-                  <button class="ot-btn ot-btn-close" @click="closeEditingPosition">
+                  <button class="ot-btn ot-btn-close"
+                    :disabled="!isPositionMarketOpen(editingPosition)"
+                    :class="{ 'ot-btn-disabled': !isPositionMarketOpen(editingPosition) }"
+                    @click="closeEditingPosition">
                     Close #{{ editingPosition?.ticket }} {{ editingPosition?.side }}
                     {{ editingPosition?.quantity_lots }} {{ editingPosition?.symbol || 'EURUSD' }}
                     at {{ editingPosition?.avg_entry_price }}
@@ -1028,6 +1031,8 @@
                   <!-- ACTION -->
                   <div class="pm-action">
                     <button class="pm-btn pm-btn-close"
+                      :disabled="!isPositionMarketOpen(pos)"
+                      :class="{ 'ot-btn-disabled': !isPositionMarketOpen(pos) }"
                       @click.stop="closePosition(pos)">
                       X
                     </button>
@@ -1278,7 +1283,10 @@
                       <!-- columnas 13 y 14 vacías -->
                       <td class="col-extra1"></td>
                       <td class="col-close">
-                          <button class="close-big-btn" @click="closePosition(pos)">×</button>
+                          <button class="close-big-btn"
+                            :disabled="!isPositionMarketOpen(pos)"
+                            :class="{ 'ot-btn-disabled': !isPositionMarketOpen(pos) }"
+                            @click="closePosition(pos)">×</button>
                       </td>
                     </tr>
 
@@ -2464,6 +2472,14 @@ export default {
 
       if (!pos || !pos.id) {
         console.warn('closePosition llamado sin pos.id');
+        return;
+      }
+
+      // 🕒 Mercado cerrado: no permitir cerrar la posición (igual que MT5).
+      // Se evalúa con el símbolo de la propia posición.
+      const posSymbol = pos.symbol || this.activeInstrumentSymbol || null;
+      if (posSymbol && !this.isSymbolTradable(posSymbol, new Date())) {
+        this.showFormError('Mercado cerrado: no se puede cerrar la posición ahora.');
         return;
       }
 
@@ -4693,6 +4709,20 @@ export default {
       if (this.isDailyBreak(asset, now)) return false;
 
       return true;
+    },
+
+
+    /* ==================================================================
+    ¿El mercado de ESTA posición está abierto ahora? (para cerrar)
+    ------------------------------------------------------------------
+    Usa el símbolo de la propia posición (no el instrumento activo) y
+    el reloj reactivo marketNowTs, para deshabilitar el botón de cierre
+    cuando el mercado está cerrado (igual que MT5).
+    ================================================================== */
+    isPositionMarketOpen(pos: any): boolean {
+      const sym = (pos && pos.symbol) || this.activeInstrumentSymbol || null;
+      if (!sym) return true;
+      return this.isSymbolTradable(sym, new Date(this.marketNowTs));
     },
 
 
