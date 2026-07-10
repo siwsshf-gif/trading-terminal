@@ -4576,17 +4576,118 @@ export default {
 
 
     /* ==================================================================
+    Clasificación de activo por nombre de símbolo (heurística).
+    ------------------------------------------------------------------
+    Sirve para aplicar horarios distintos por clase de instrumento.
+    Si un símbolo no encaja en ninguna regla -> 'forex' (fallback
+    seguro: forex no tiene cierre diario entre semana).
+    ================================================================== */
+    classifyAsset(symbol: string): 'forex' | 'metal' | 'index' | 'oil' | 'crypto' {
+      const s = (symbol || '').toUpperCase();
+      if (!s) return 'forex';
+
+      // Petróleo / energía
+      if (/(WTI|BRENT|USOIL|UKOIL|OIL|NGAS|NATGAS|XNG|XBR|XTI)/.test(s)) return 'oil';
+
+      // Metales preciosos
+      if (/^(XAU|XAG|XPT|XPD)/.test(s)) return 'metal';
+
+      // Cripto (prefijos comunes o sufijos con USDT)
+      if (/^(BTC|ETH|XRP|LTC|BCH|SOL|ADA|DOGE|DOT|AVAX|LINK|MATIC|BNB|TRX|SHIB|UNI)/.test(s)) return 'crypto';
+      if (/USDT$/.test(s)) return 'crypto';
+
+      // Índices (US500, US30, USTEC, NAS100, GER40, UK100, JP225, EU50, FRA40, AUS200, HK50...)
+      if (/^(US|GER|UK|JP|EU|FRA|AUS|HK|ESP|NDX|SPX|DJI|NAS|GER|UST)\d/.test(s)) return 'index';
+      if (/(US500|US30|US100|USTEC|NAS100|SPX500|GER40|GER30|UK100|JP225|EU50|FRA40|AUS200|HK50|ESP35|NDX100|WS30|NAS)/.test(s)) return 'index';
+
+      // Por defecto: forex
+      return 'forex';
+    },
+
+
+    /* ==================================================================
+    Break diario ENTRE SEMANA (anclado a Nueva York, DST automático).
+    ------------------------------------------------------------------
+    Metales / índices / petróleo cierran ~1h en el "rollover" diario:
+    17:00 -> 18:00 hora de Nueva York (equivale a 15:00-16:00 CDMX en
+    verano US y 16:00-17:00 CDMX en invierno; Intl lo ajusta solo).
+    Forex y cripto NO tienen break diario -> siempre false.
+    Devuelve true si el símbolo está en su ventana de cierre diario.
+    ================================================================== */
+    isDailyBreak(asset: 'forex' | 'metal' | 'index' | 'oil' | 'crypto', now: Date = new Date()): boolean {
+      // Solo estas clases tienen corte diario entre semana
+      if (asset !== 'metal' && asset !== 'index' && asset !== 'oil') return false;
+
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/New_York',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).formatToParts(now);
+
+        const get = (type: string) =>
+          parts.find((p) => p.type === type)?.value ?? '';
+
+        let hour = parseInt(get('hour'), 10);
+        if (hour === 24) hour = 0;
+        const minute = parseInt(get('minute'), 10);
+
+        if (!Number.isFinite(hour) || !Number.isFinite(minute)) return false;
+
+        const minutesOfDay = hour * 60 + minute;
+
+        const BREAK_START = 17 * 60;   // 17:00 NY
+        const BREAK_END = 18 * 60;     // 18:00 NY
+
+        return minutesOfDay >= BREAK_START && minutesOfDay < BREAK_END;
+      } catch (err) {
+        // Ante cualquier fallo, no congelamos (asumimos abierto)
+        console.warn('[Watchlist] isDailyBreak fallo, asumiendo abierto:', err);
+        return false;
+      }
+    },
+
+
+    /* ==================================================================
+    ¿Este símbolo se está negociando ahora mismo?
+    ------------------------------------------------------------------
+    Combina el cierre de fin de semana (CDMX) y el break diario (NY):
+      - Cripto: 24/7 (ignora fin de semana y no tiene break diario).
+      - Resto: congela en fin de semana + en su break diario si aplica.
+    ================================================================== */
+    isSymbolTradable(symbol: string, now: Date = new Date()): boolean {
+      const asset = this.classifyAsset(symbol);
+
+      // Cripto opera 24/7: nunca se congela.
+      if (asset === 'crypto') return true;
+
+      // Fin de semana (Mexico City): congela todo lo no-cripto.
+      if (!this.isMarketOpen(now)) return false;
+
+      // Break diario entre semana (metales / índices / petróleo).
+      if (this.isDailyBreak(asset, now)) return false;
+
+      return true;
+    },
+
+
+    /* ==================================================================
     Método helper para obtener el precio “de mercado” de la posición
     ================================================================== */
     animatePricesStep(): void {
       console.log('[Watchlist] animatePricesStep tick');
 
-      // 🕒 Mercado cerrado (fin de semana Mexico City): congelamos precios.
-      if (!this.isMarketOpen()) return;
-
       if (!this.watchlistSymbols || !this.watchlistSymbols.length) return;
 
+      // Timestamp único para evaluar horarios de forma consistente en este tick.
+      const now = new Date();
+
       this.watchlistSymbols.forEach((symbol: string) => {
+        // 🕒 Mercado cerrado para ESTE símbolo (fin de semana o break diario):
+        // congelamos su precio (no lo movemos en este tick).
+        if (!this.isSymbolTradable(symbol, now)) return;
+
         const current = this.pricesBySymbol[symbol];
         if (!current || current.bid == null || current.ask == null) return;
 
