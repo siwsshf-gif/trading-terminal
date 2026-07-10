@@ -548,6 +548,11 @@
                   ></textarea>
                 </div>
 
+                <!-- 🕒 Aviso de mercado cerrado (bloquea abrir operaciones) -->
+                <div v-if="!isActiveMarketOpen" class="ot-form-error" style="margin-bottom: 8px;">
+                  Mercado cerrado — no se pueden abrir operaciones
+                </div>
+
                 <div v-show="showSellBuyMarket" class="mt-form">
                   <!-- Precios -->
                   <div class="ot-prices">
@@ -1868,6 +1873,7 @@ export default {
       realTicksBySymbol: {} as Record<string, PriceTick>,   // último tick real por símbolo
       prevRealTicksBySymbol: {} as Record<string, PriceTick>, // penúltimo tick real
       priceAnimationIntervalId: null as number | null,      // setInterval para mover precios
+      marketNowTs: Date.now() as number,                    // reloj reactivo (ms) para estado de mercado abierto/cerrado
 
       // 👇 WATCHLIST: digits por símbolo (EURUSD -> 5, XAUUSD -> 3, etc.)
       spreadMinBySymbol: {} as Record<string, number | null>,
@@ -2254,6 +2260,16 @@ export default {
           this.activeInstrumentId
         );
         this.showFormError('No active account or instrument found.');
+        return;
+      }
+
+      // 🕒 Mercado cerrado: no permitir abrir operaciones a mercado.
+      // (protege también los botones rápidos del chart, que no usan :disabled)
+      if (
+        this.activeInstrumentSymbol &&
+        !this.isSymbolTradable(this.activeInstrumentSymbol, new Date())
+      ) {
+        this.showFormError('Mercado cerrado: no se pueden abrir operaciones ahora.');
         return;
       }
 
@@ -2788,6 +2804,14 @@ export default {
       }
       if (!this.activeAccountId || !this.activeInstrumentId) {
         this.showFormError('No active account or instrument found.');
+        return;
+      }
+      // 🕒 Mercado cerrado: no permitir crear órdenes pendientes.
+      if (
+        this.activeInstrumentSymbol &&
+        !this.isSymbolTradable(this.activeInstrumentSymbol, new Date())
+      ) {
+        this.showFormError('Mercado cerrado: no se pueden crear órdenes ahora.');
         return;
       }
       if (!this.volume || this.volume <= 0) {
@@ -4678,10 +4702,14 @@ export default {
     animatePricesStep(): void {
       console.log('[Watchlist] animatePricesStep tick');
 
+      // 🕒 Reloj reactivo: refresca cada tick para que los computeds de horario
+      // (isActiveMarketOpen) se recalculen aunque el usuario esté inactivo.
+      this.marketNowTs = Date.now();
+
       if (!this.watchlistSymbols || !this.watchlistSymbols.length) return;
 
       // Timestamp único para evaluar horarios de forma consistente en este tick.
-      const now = new Date();
+      const now = new Date(this.marketNowTs);
 
       this.watchlistSymbols.forEach((symbol: string) => {
         // 🕒 Mercado cerrado para ESTE símbolo (fin de semana o break diario):
@@ -6206,6 +6234,19 @@ export default {
       return this.activeTick?.ask ?? '-';
     },
 
+    /* =========================================================
+    ¿El mercado del instrumento activo está abierto AHORA?
+    Reactivo: depende de marketNowTs (se refresca cada segundo en
+    animatePricesStep) y del símbolo activo. Se usa para deshabilitar
+    la apertura de operaciones (market y pending) con mercado cerrado.
+    ========================================================= */
+    isActiveMarketOpen(): boolean {
+      const ts = this.marketNowTs;                 // dep reactiva
+      const sym = this.activeInstrumentSymbol;
+      if (!sym) return true;                        // sin símbolo activo: no bloqueamos
+      return this.isSymbolTradable(sym, new Date(ts));
+    },
+
 
     /* =========================================================
     SUPABASE - WATCHLIST
@@ -6301,8 +6342,10 @@ export default {
       // - formulario está abierto
       // - es orden nueva a mercado (no edición)
       if (!this.showTradingForm) return null;
-      if (this.orderType !== 'market') return null;
       if (this.editingPosition || this.editingPendingOrder) return null;
+      // 🕒 Mercado cerrado: no se pueden abrir operaciones nuevas
+      if (!this.isActiveMarketOpen) return 'Mercado cerrado';
+      if (this.orderType !== 'market') return null;
 
       return this.validateNewMarketSlTp('buy');
     },
@@ -6310,22 +6353,26 @@ export default {
 
     marketErrorSell(): string | null {
       if (!this.showTradingForm) return null;
-      if (this.orderType !== 'market') return null;
       if (this.editingPosition || this.editingPendingOrder) return null;
+      // 🕒 Mercado cerrado: no se pueden abrir operaciones nuevas
+      if (!this.isActiveMarketOpen) return 'Mercado cerrado';
+      if (this.orderType !== 'market') return null;
 
       return this.validateNewMarketSlTp('sell');
     },
 
 
     canClickMarketBuy(): boolean {
-      // volumen válido + sin error de validación
+      // volumen válido + sin error de validación + mercado abierto
       if (!this.volume || this.volume <= 0) return false;
+      if (!this.isActiveMarketOpen) return false;
       return !this.tradingLoading && !this.marketErrorBuy;
     },
 
 
     canClickMarketSell(): boolean {
       if (!this.volume || this.volume <= 0) return false;
+      if (!this.isActiveMarketOpen) return false;
       return !this.tradingLoading && !this.marketErrorSell;
     },
 
@@ -6339,6 +6386,11 @@ export default {
     isPlaceOrderDisabled(): boolean {
       // Si estás editando algo, NO deberías poder crear una nueva pending
       if (this.editingPosition || this.editingPendingOrder) {
+        return true;
+      }
+
+      // 🕒 Mercado cerrado: no se pueden crear órdenes pendientes nuevas
+      if (!this.isActiveMarketOpen) {
         return true;
       }
 
